@@ -1,0 +1,12 @@
+{
+	"name": "com.cakeslice.mlapi_editor",
+	"displayName": "MLAPI-Editor",
+	"version": "12.1.5",
+	"unity": "2019.4",
+	"description": "MLAPI Editor (cakeslice fork)",
+	"keywords": [
+		"networking"
+	],
+	"author": "Albin Corén (cakeslice fork)",
+	"dependencies": {}
+}

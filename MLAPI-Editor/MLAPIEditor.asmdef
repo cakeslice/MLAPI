@@ -1,0 +1,17 @@
+{
+    "name": "MLAPIEditor",
+    "references": [
+        "GUID:7847b7c990ed1b8409844d65526d871b"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -261,3 +261,9 @@ __pycache__/
 
 # Docs
 docs/LastBuild.log
+
+##################
+
+bin.meta
+obj.meta
+settings.json

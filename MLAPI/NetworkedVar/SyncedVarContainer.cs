@@ -4,65 +4,69 @@ using MLAPI.Serialization.Pooled;
 
 namespace MLAPI.NetworkedVar
 {
-    internal class SyncedVarContainer
-    {
-        internal SyncedVarAttribute attribute;
-        internal FieldInfo field;
-        internal object fieldInstance;
-        internal object value;
-        internal bool isDirty;
-        internal float lastSyncedTime;
+	internal class SyncedVarContainer
+	{
+		internal SyncedVarAttribute attribute;
+		internal FieldInfo field;
+		internal object fieldInstance;
+		internal object value;
+		internal bool isDirty;
+		internal float lastSyncedTime;
+		internal MethodInfo method;
 
-        internal bool IsDirty()
-        {
-            if (attribute.SendTickrate >= 0 && (attribute.SendTickrate == 0 || NetworkingManager.Singleton.NetworkTime - lastSyncedTime >= (1f / attribute.SendTickrate)))
-            {
-                lastSyncedTime = NetworkingManager.Singleton.NetworkTime;
+		internal bool IsDirty()
+		{
+			if (attribute.SendTickrate >= 0 && (attribute.SendTickrate == 0 || NetworkingManager.Singleton.NetworkTime - lastSyncedTime >= (1f / attribute.SendTickrate)))
+			{
+				lastSyncedTime = NetworkingManager.Singleton.NetworkTime;
 
-                object newValue = field.GetValue(fieldInstance);
-                object oldValue = value;
+				object newValue = field.GetValue(fieldInstance);
+				object oldValue = value;
 
-                if (!Equals(newValue, oldValue) || isDirty)
-                {
-                    isDirty = true;
+				if (!Equals(newValue, oldValue) || isDirty)
+				{
+					isDirty = true;
 
-                    value = newValue;
+					value = newValue;
 
-                    return true;
-                }
-            }
+					return true;
+				}
+			}
 
-            return false;
-        }
+			return false;
+		}
 
-        internal void ResetDirty()
-        {
-            value = field.GetValue(fieldInstance);
-            isDirty = false;
-        }
+		internal void ResetDirty()
+		{
+			value = field.GetValue(fieldInstance);
+			isDirty = false;
+		}
 
-        internal void WriteValue(Stream stream, bool checkDirty = true)
-        {
-            using (PooledBitWriter writer = PooledBitWriter.Get(stream))
-            {
-                if (checkDirty)
-                {
-                    // Trigger a value update
-                    IsDirty();
-                }
+		internal void WriteValue(Stream stream, bool checkDirty = true)
+		{
+			using (PooledBitWriter writer = PooledBitWriter.Get(stream))
+			{
+				if (checkDirty)
+				{
+					// Trigger a value update
+					IsDirty();
+				}
 
-                writer.WriteObjectPacked(value);
-            }
-        }
+				writer.WriteObjectPacked(value);
+			}
+		}
 
-        internal void ReadValue(Stream stream)
-        {
-            using (PooledBitReader reader = PooledBitReader.Get(stream))
-            {
-                value = reader.ReadObjectPacked(field.FieldType);
+		internal void ReadValue(Stream stream)
+		{
+			using (PooledBitReader reader = PooledBitReader.Get(stream))
+			{
+				value = reader.ReadObjectPacked(field.FieldType);
 
-                field.SetValue(fieldInstance, value);
-            }
-        }
-    }
+				field.SetValue(fieldInstance, value);
+
+				if (method != null)
+					method.Invoke(this, null);
+			}
+		}
+	}
 }

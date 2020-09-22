@@ -12,7 +12,7 @@ namespace MLAPI.NetworkedVar
 		internal object value;
 		internal bool isDirty;
 		internal float lastSyncedTime;
-		internal MethodInfo method;
+		internal MethodInfo hookMethod;
 
 		internal bool IsDirty()
 		{
@@ -64,8 +64,8 @@ namespace MLAPI.NetworkedVar
 
 				field.SetValue(fieldInstance, value);
 
-				if (method != null)
-					method.Invoke(this, null);
+				if (hookMethod != null)
+					hookMethod.Invoke(fieldInstance, null);
 			}
 		}
 	}

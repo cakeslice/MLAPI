@@ -23,6 +23,6 @@ namespace MLAPI.NetworkedVar
 		/// <summary>
 		/// The method to invoke when var is updated
 		/// </summary>
-		public string Hook;
+		public string Hook = "";
 	}
 }

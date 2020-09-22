@@ -281,11 +281,10 @@ namespace MLAPI
 				{
 					if (SerializationManager.IsTypeSupported(fieldType))
 					{
-						MethodInfo method = null;
+						MethodInfo hookMethod = null;
 						if (!string.IsNullOrEmpty(attributes[0].Hook))
 						{
-							method = GetType().GetMethod(attributes[0].Hook, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-							break;
+							hookMethod = GetType().GetMethod(attributes[0].Hook, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
 						}
 
 						// This is a supported simple var type.
@@ -296,7 +295,7 @@ namespace MLAPI
 							isDirty = false,
 							value = sortedFields[i].GetValue(this),
 							attribute = attributes[0],
-							method = method
+							hookMethod = hookMethod
 						});
 					}
 					else

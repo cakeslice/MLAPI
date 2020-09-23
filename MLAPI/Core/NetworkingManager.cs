@@ -323,7 +323,6 @@ namespace MLAPI
 			networkTimeOffset = 0f;
 			currentNetworkTimeOffset = 0f;
 			lastEventTickTime = 0f;
-			lastReceiveTickTime = 0f;
 			eventOvershootCounter = 0f;
 			PendingClients.Clear();
 			ConnectedClients.Clear();
@@ -631,7 +630,6 @@ namespace MLAPI
 				NetworkConfig.NetworkTransport.Shutdown();
 		}
 
-		private float lastReceiveTickTime;
 		private float lastEventTickTime;
 		private float eventOvershootCounter;
 		private float lastTimeSyncTime;
@@ -639,8 +637,6 @@ namespace MLAPI
 		{
 			if (IsListening)
 			{
-				/* if ((NetworkTime - lastReceiveTickTime >= (1f / NetworkConfig.ReceiveTickrate)) || NetworkConfig.ReceiveTickrate <= 0)
-				{ */
 				NetworkProfiler.StartTick(TickType.Receive);
 				NetEventType eventType;
 				int processedEvents = 0;
@@ -652,9 +648,7 @@ namespace MLAPI
 
 					// Only do another iteration if: there are no more messages AND (there is no limit to max events or we have processed less than the maximum)
 				} while (IsListening && (eventType != NetEventType.Nothing && (NetworkConfig.MaxReceiveEventsPerTickRate <= 0 || processedEvents < NetworkConfig.MaxReceiveEventsPerTickRate)));
-				lastReceiveTickTime = NetworkTime;
 				NetworkProfiler.EndTick();
-				/* } */
 
 				if (!IsListening)
 				{

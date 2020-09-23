@@ -61,11 +61,14 @@ namespace MLAPI.Configuration
 		/// </summary>
 		[Tooltip("Whether or not a player object should be created by default. This value can be overriden on a case by case basis with ConnectionApproval.")]
 		public bool CreatePlayerPrefab = true;
-		/// <summary>
+
+		// ! Limiting the ReceiveTickrate is bad pratice since it will add unnecessary lag with no real benefit. The ReceiveTickrate is already limited by the game's framerate and we want packets to affect the game's state as fast as possible.		
+		/* /// <summary>
 		/// Amount of times per second the receive queue is emptied and all messages inside are processed.
 		/// </summary>
 		[Tooltip("The amount of times per second the receive queue is emptied from pending incoming messages")]
-		public int ReceiveTickrate = 64;
+		public int ReceiveTickrate = 64; */
+
 		/// <summary>
 		/// The max amount of messages to process per ReceiveTickrate. This is to prevent flooding.
 		/// </summary>
@@ -250,7 +253,7 @@ namespace MLAPI.Configuration
 						writer.WriteString(config.RegisteredScenes[i]);
 					}
 
-					writer.WriteInt32Packed(config.ReceiveTickrate);
+					/* writer.WriteInt32Packed(config.ReceiveTickrate); */
 					writer.WriteInt32Packed(config.MaxReceiveEventsPerTickRate);
 					writer.WriteInt32Packed(config.EventTickrate);
 					writer.WriteInt32Packed(config.ClientConnectionBufferTimeout);
@@ -299,7 +302,7 @@ namespace MLAPI.Configuration
 						config.RegisteredScenes.Add(reader.ReadString().ToString());
 					}
 
-					config.ReceiveTickrate = reader.ReadInt32Packed();
+					/* config.ReceiveTickrate = reader.ReadInt32Packed(); */
 					config.MaxReceiveEventsPerTickRate = reader.ReadInt32Packed();
 					config.EventTickrate = reader.ReadInt32Packed();
 					config.ClientConnectionBufferTimeout = reader.ReadInt32Packed();

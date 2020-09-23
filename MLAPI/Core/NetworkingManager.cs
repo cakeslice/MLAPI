@@ -324,6 +324,8 @@ namespace MLAPI
 			currentNetworkTimeOffset = 0f;
 			lastEventTickTime = 0f;
 			eventOvershootCounter = 0f;
+			lastLagCompensationTickTime = 0f;
+			lagCompensationOvershootCounter = 0f;
 			PendingClients.Clear();
 			ConnectedClients.Clear();
 			ConnectedClientsList.Clear();
@@ -632,6 +634,8 @@ namespace MLAPI
 
 		private float lastEventTickTime;
 		private float eventOvershootCounter;
+		private float lastLagCompensationTickTime;
+		private float lagCompensationOvershootCounter;
 		private float lastTimeSyncTime;
 		private void Update()
 		{
@@ -663,8 +667,6 @@ namespace MLAPI
 					if (IsServer)
 					{
 						eventOvershootCounter += ((NetworkTime - lastEventTickTime) - (1f / NetworkConfig.EventTickrate));
-						LagCompensationManager.AddFrames();
-						ResponseMessageManager.CheckTimeouts();
 					}
 
 					if (NetworkConfig.EnableNetworkedVar)
@@ -692,6 +694,32 @@ namespace MLAPI
 					eventOvershootCounter -= (1f / NetworkConfig.EventTickrate);
 					LagCompensationManager.AddFrames();
 					NetworkProfiler.EndTick();
+				}
+
+				if (((NetworkTime - lastLagCompensationTickTime >= (1f / NetworkConfig.LagCompensationTickRate))))
+				{
+					// TODO: NetworkProfiler.StartTick(TickType.Event);
+
+					if (IsServer)
+					{
+						lagCompensationOvershootCounter += ((NetworkTime - lastLagCompensationTickTime) - (1f / NetworkConfig.LagCompensationTickRate));
+						LagCompensationManager.AddFrames();
+					}
+
+					if (IsServer)
+					{
+						lastLagCompensationTickTime = NetworkTime;
+					}
+
+					// TODO: NetworkProfiler.EndTick();
+				}
+				else if (IsServer && lagCompensationOvershootCounter >= ((1f / NetworkConfig.LagCompensationTickRate)))
+				{
+					// TODO: NetworkProfiler.StartTick(TickType.Event);
+					//We run this one to compensate for previous update overshoots.
+					lagCompensationOvershootCounter -= (1f / NetworkConfig.LagCompensationTickRate);
+					LagCompensationManager.AddFrames();
+					// TODO: NetworkProfiler.EndTick();
 				}
 
 				if (IsServer && NetworkConfig.EnableTimeResync && NetworkTime - lastTimeSyncTime >= NetworkConfig.TimeResyncInterval)

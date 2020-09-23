@@ -107,7 +107,7 @@ public class NetworkingManagerEditor : Editor
 		networkTransportProperty = networkConfigProperty.FindPropertyRelative("NetworkTransport");
 		receiveTickrateProperty = networkConfigProperty.FindPropertyRelative("ReceiveTickrate");
 		maxReceiveEventsPerTickRateProperty = networkConfigProperty.FindPropertyRelative("MaxReceiveEventsPerTickRate");
-		lagCompensationTickrateProperty = networkConfigProperty.FindPropertyRelative("LagCompensationTickrate");
+		lagCompensationTickrateProperty = networkConfigProperty.FindPropertyRelative("LagCompensationTickRate");
 		eventTickrateProperty = networkConfigProperty.FindPropertyRelative("EventTickrate");
 		maxObjectUpdatesPerTickProperty = networkConfigProperty.FindPropertyRelative("MaxObjectUpdatesPerTick");
 		clientConnectionBufferTimeoutProperty = networkConfigProperty.FindPropertyRelative("ClientConnectionBufferTimeout");
@@ -149,7 +149,7 @@ public class NetworkingManagerEditor : Editor
 		networkTransportProperty = networkConfigProperty.FindPropertyRelative("NetworkTransport");
 		receiveTickrateProperty = networkConfigProperty.FindPropertyRelative("ReceiveTickrate");
 		maxReceiveEventsPerTickRateProperty = networkConfigProperty.FindPropertyRelative("MaxReceiveEventsPerTickRate");
-		lagCompensationTickrateProperty = networkConfigProperty.FindPropertyRelative("LagCompensationTickrate");
+		lagCompensationTickrateProperty = networkConfigProperty.FindPropertyRelative("LagCompensationTickRate");
 		eventTickrateProperty = networkConfigProperty.FindPropertyRelative("EventTickrate");
 		maxObjectUpdatesPerTickProperty = networkConfigProperty.FindPropertyRelative("MaxObjectUpdatesPerTick");
 		clientConnectionBufferTimeoutProperty = networkConfigProperty.FindPropertyRelative("ClientConnectionBufferTimeout");

@@ -2,11 +2,11 @@
 
 MLAPI-Plus is a fork of MidLevel/MLAPI that will reflect all the changes I had to do to make it suitable for the fast-paced competitive multiplayer game I'm currently developing which uses a client/server architecture with dedicated servers.
 
-I will be adding any features I need like client prediction and server reconciliation as well as changing anything that obstructs what the game needs to use the minimum bandwidth, to have as low latency as possible, the smoothest synchronization and minimum processing requirements to reduce server costs.
+I will be adding any features I need like client-side prediction and server reconciliation as well as changing anything that obstructs what the game needs to use the minimum bandwidth, to have as low latency as possible, the smoothest synchronization and minimum processing requirements to reduce server costs.
 
 I will also develop some real world usage examples of the framework based on my game later on.
 
-As for the transport I removed the deprecated UNET and chose MidLevel/Ruffles because it looks like the best managed LLAPI out there and was made by the same developer of MLAPI. If the original developer is reading this, thank you for MLAPI and Ruffles, they're really good 🙂.
+As for the default transport I removed the deprecated UNET and chose MidLevel/Ruffles because it looks like the best managed LLAPI out there and was made by the same developer of MLAPI. If the original developer is reading this, thank you for MLAPI and Ruffles, they're really good. 🙂
 
 After the game's release into production I also intend to commit all bugs and problems I can fix as well as submitting pull requests to the original repository.
 

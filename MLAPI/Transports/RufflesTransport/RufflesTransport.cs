@@ -29,11 +29,14 @@ namespace RufflesTransport
 		public string ConnectAddress = "127.0.0.1";
 		public ushort Port = 7777;
 		public List<RufflesChannel> Channels = new List<RufflesChannel>();
+		// In MLAPI this is used by default for RPCs and SyncedVars/NetworkedVars"
 		public Ruffles.Channeling.ChannelType MLAPIReliableEquivalent = Ruffles.Channeling.ChannelType.Reliable;
+		// In MLAPI this is used for Spawning/Destroying objects and core internal communication
 		public Ruffles.Channeling.ChannelType MLAPIReliableFragmentedSequencedEquivalent = Ruffles.Channeling.ChannelType.ReliableSequencedFragmented;
 		public Ruffles.Channeling.ChannelType MLAPIReliableSequencedEquivalent = Ruffles.Channeling.ChannelType.ReliableSequenced;
+		// In MLAPI this is used for time syncing (updated occasionally, can be unreliable)
 		public Ruffles.Channeling.ChannelType MLAPIUnreliableEquivalent = Ruffles.Channeling.ChannelType.Unreliable;
-		public Ruffles.Channeling.ChannelType MLAPIUnreliableSequencedEquivalent = Ruffles.Channeling.ChannelType.UnreliableOrdered;
+		public Ruffles.Channeling.ChannelType MLAPIUnreliableSequencedEquivalent = Ruffles.Channeling.ChannelType.UnreliableSequenced;
 		public int TransportBufferSize = 1024 * 8;
 		public LogLevel LogLevel = LogLevel.Info;
 

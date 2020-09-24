@@ -86,7 +86,7 @@ namespace MLAPI.Prototyping
 		/// <summary>
 		/// The channel to send the data on
 		/// </summary>
-		[Tooltip("The channel to send the data on. Uses the default channel if left unspecified")]
+		[Tooltip("The channel to send the data on. WARNING: Uses the default channel (Reliable) if left unspecified and should probably be changed to UnreliableOrdered")]
 		public string Channel = null;
 
 		private float lerpT;
@@ -172,9 +172,9 @@ namespace MLAPI.Prototyping
 					lastSentRot = transform.rotation;
 
 					if (IsServer)
-						InvokeApplyTransformOnEveryoneExcept(OwnerClientId, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_POSITION_UPDATE" : Channel);
+						InvokeApplyTransformOnEveryoneExcept(OwnerClientId, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_DEFAULT_MESSAGE" : Channel);
 					else
-						InvokeServerRpc(SubmitTransform, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_POSITION_UPDATE" : Channel);
+						InvokeServerRpc(SubmitTransform, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_DEFAULT_MESSAGE" : Channel);
 				}
 			}
 			else
@@ -418,7 +418,7 @@ namespace MLAPI.Prototyping
 						info.lastMissedPosition = null;
 						info.lastMissedRotation = null;
 
-						InvokeApplyTransform(NetworkingManager.Singleton.ConnectedClientsList[i].ClientId, position, rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_POSITION_UPDATE" : Channel);
+						InvokeApplyTransform(NetworkingManager.Singleton.ConnectedClientsList[i].ClientId, position, rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_DEFAULT_MESSAGE" : Channel);
 					}
 					else
 					{
@@ -429,7 +429,7 @@ namespace MLAPI.Prototyping
 			}
 			else
 			{
-				InvokeApplyTransformOnEveryoneExcept(OwnerClientId, position, rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_POSITION_UPDATE" : Channel);
+				InvokeApplyTransformOnEveryoneExcept(OwnerClientId, position, rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_DEFAULT_MESSAGE" : Channel);
 			}
 		}
 
@@ -462,7 +462,7 @@ namespace MLAPI.Prototyping
 						info.lastMissedPosition = null;
 						info.lastMissedRotation = null;
 
-						InvokeApplyTransform(NetworkingManager.Singleton.ConnectedClientsList[i].ClientId, pos.Value, rot.Value, string.IsNullOrEmpty(Channel) ? "MLAPI_POSITION_UPDATE" : Channel);
+						InvokeApplyTransform(NetworkingManager.Singleton.ConnectedClientsList[i].ClientId, pos.Value, rot.Value, string.IsNullOrEmpty(Channel) ? "MLAPI_DEFAULT_MESSAGE" : Channel);
 					}
 				}
 			}

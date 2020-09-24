@@ -172,9 +172,9 @@ namespace MLAPI.Prototyping
 					lastSentRot = transform.rotation;
 
 					if (IsServer)
-						InvokeApplyTransformOnEveryoneExcept(OwnerClientId, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_DEFAULT_MESSAGE" : Channel);
+						InvokeApplyTransformOnEveryoneExcept(OwnerClientId, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_POSITION_UPDATE" : Channel);
 					else
-						InvokeServerRpc(SubmitTransform, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_DEFAULT_MESSAGE" : Channel);
+						InvokeServerRpc(SubmitTransform, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_POSITION_UPDATE" : Channel);
 				}
 			}
 			else
@@ -418,7 +418,7 @@ namespace MLAPI.Prototyping
 						info.lastMissedPosition = null;
 						info.lastMissedRotation = null;
 
-						InvokeApplyTransform(NetworkingManager.Singleton.ConnectedClientsList[i].ClientId, position, rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_DEFAULT_MESSAGE" : Channel);
+						InvokeApplyTransform(NetworkingManager.Singleton.ConnectedClientsList[i].ClientId, position, rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_POSITION_UPDATE" : Channel);
 					}
 					else
 					{
@@ -429,7 +429,7 @@ namespace MLAPI.Prototyping
 			}
 			else
 			{
-				InvokeApplyTransformOnEveryoneExcept(OwnerClientId, position, rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_DEFAULT_MESSAGE" : Channel);
+				InvokeApplyTransformOnEveryoneExcept(OwnerClientId, position, rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_POSITION_UPDATE" : Channel);
 			}
 		}
 
@@ -462,7 +462,7 @@ namespace MLAPI.Prototyping
 						info.lastMissedPosition = null;
 						info.lastMissedRotation = null;
 
-						InvokeApplyTransform(NetworkingManager.Singleton.ConnectedClientsList[i].ClientId, pos.Value, rot.Value, string.IsNullOrEmpty(Channel) ? "MLAPI_DEFAULT_MESSAGE" : Channel);
+						InvokeApplyTransform(NetworkingManager.Singleton.ConnectedClientsList[i].ClientId, pos.Value, rot.Value, string.IsNullOrEmpty(Channel) ? "MLAPI_POSITION_UPDATE" : Channel);
 					}
 				}
 			}

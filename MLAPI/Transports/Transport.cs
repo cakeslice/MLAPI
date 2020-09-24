@@ -89,7 +89,12 @@ namespace MLAPI.Transports
 				{
 					 Name = "MLAPI_TIME_SYNC",
 					 Type = ChannelType.Unreliable
-				}
+				},
+				new TransportChannel()
+				{
+					 Name = "MLAPI_POSITION_UPDATE",
+					 Type = ChannelType.UnreliableSequenced
+				},
 		};
 
 		/// <summary>

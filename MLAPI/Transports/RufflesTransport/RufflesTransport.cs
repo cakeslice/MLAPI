@@ -170,6 +170,7 @@ namespace RufflesTransport
 
 			if (@event.Connection != null)
 			{
+				@event.Connection.SetChannelLastPollSequence(@event.ChannelId);
 				clientId = GetMLAPIClientId(@event.Connection.Id, false);
 			}
 			else

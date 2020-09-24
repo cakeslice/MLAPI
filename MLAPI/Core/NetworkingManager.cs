@@ -404,7 +404,8 @@ namespace MLAPI
 				}
 			}
 
-			NetworkConfig.NetworkTransport.OnTransportEvent += HandleRawTransportPoll;
+			// ! Removed since it doesn't make sense to receive data outside of the Unity Update Loop
+			/* NetworkConfig.NetworkTransport.OnTransportEvent += HandleRawTransportPoll; */
 
 			NetworkConfig.NetworkTransport.ResetChannelCache();
 
@@ -624,7 +625,8 @@ namespace MLAPI
 			IsListening = false;
 			IsServer = false;
 			IsClient = false;
-			NetworkConfig.NetworkTransport.OnTransportEvent -= HandleRawTransportPoll;
+			// ! Removed since it doesn't make sense to receive data outside of the Unity Update Loop
+			/* NetworkConfig.NetworkTransport.OnTransportEvent -= HandleRawTransportPoll; */
 			SpawnManager.DestroyNonSceneObjects();
 			SpawnManager.ServerResetShudownStateForSceneObjects();
 
@@ -644,6 +646,7 @@ namespace MLAPI
 				NetworkProfiler.StartTick(TickType.Receive);
 				NetEventType eventType;
 				int processedEvents = 0;
+
 				do
 				{
 					processedEvents++;
@@ -652,6 +655,7 @@ namespace MLAPI
 
 					// Only do another iteration if: there are no more messages AND (there is no limit to max events or we have processed less than the maximum)
 				} while (IsListening && (eventType != NetEventType.Nothing && (NetworkConfig.MaxReceiveEventsPerTickRate <= 0 || processedEvents < NetworkConfig.MaxReceiveEventsPerTickRate)));
+
 				NetworkProfiler.EndTick();
 
 				if (!IsListening)

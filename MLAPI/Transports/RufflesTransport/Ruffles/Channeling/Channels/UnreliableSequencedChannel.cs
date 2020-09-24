@@ -7,7 +7,7 @@ using Ruffles.Utils;
 
 namespace Ruffles.Channeling.Channels
 {
-	internal class UnreliableOrderedChannel : IChannel
+	internal class UnreliableSequencedChannel : IChannel
 	{
 		// Incoming sequencing
 		private ushort _incomingLowestAckedSequence;
@@ -23,7 +23,7 @@ namespace Ruffles.Channeling.Channels
 		private MemoryManager memoryManager;
 		private SocketConfig config;
 
-		internal UnreliableOrderedChannel(byte channelId, Connection connection, SocketConfig config, MemoryManager memoryManager)
+		internal UnreliableSequencedChannel(byte channelId, Connection connection, SocketConfig config, MemoryManager memoryManager)
 		{
 			this.channelId = channelId;
 			this.connection = connection;
@@ -95,16 +95,30 @@ namespace Ruffles.Channeling.Channels
 			// Unreliable messages have no acks.
 		}
 
+		private ushort _lastPollSequence;
 		public void SetLastPollSequence()
-		{ }
+		{
+			_lastPollSequence = _incomingLowestAckedSequence;
+		}
 		public HeapPointers HandleIncomingMessagePoll(ArraySegment<byte> payload)
 		{
+			// TODO: We still need to sort them... BUT it can't be done here, it needs to be done when pooling all of them and sorting before processing OR when inserting in the ConcurrentCircularQueue
+
 			// Read the sequence number
 			ushort sequence = (ushort)(payload.Array[payload.Offset] | (ushort)(payload.Array[payload.Offset + 1] << 8));
 
 			lock (_receiveLock)
 			{
-				if (SequencingUtils.Distance(sequence, _incomingLowestAckedSequence, sizeof(ushort)) > 0)
+				/* if (SequencingUtils.Distance(sequence, _incomingLowestAckedSequence, sizeof(ushort)) <= 0)
+				{
+					if (SequencingUtils.Distance(sequence, _lastPollSequence, sizeof(ushort)) > 0)
+					{
+						Logging.LogInfo("Skipping dropping packet since it's newer than _lastPollSequence (" + _lastPollSequence + ") | _incomingLowestAckedSequence: " + _incomingLowestAckedSequence + " | currentSequence: " + sequence);
+					}
+				} */
+
+				if (SequencingUtils.Distance(sequence, _lastPollSequence, sizeof(ushort)) > 0)
+				// ! We're using _lastPollSequence instead of _incomingLowestAckedSequence to not drop old packets if we're still waiting for them to be polled by the game/MLAPI, which we can still be sorted properly
 				{
 					// Set the new sequence
 					_incomingLowestAckedSequence = sequence;
@@ -124,7 +138,7 @@ namespace Ruffles.Channeling.Channels
 
 		public void InternalUpdate(out bool timeout)
 		{
-			// UnreliableOrdered doesnt need to resend, thus no internal loop is required
+			// UnreliableSequenced doesnt need to resend, thus no internal loop is required
 			timeout = false;
 		}
 
@@ -136,6 +150,7 @@ namespace Ruffles.Channeling.Channels
 				{
 					// Clear all incoming states
 					_incomingLowestAckedSequence = 0;
+					_lastPollSequence = 0;
 
 					// Clear all outgoing states
 					_lastOutboundSequenceNumber = 0;

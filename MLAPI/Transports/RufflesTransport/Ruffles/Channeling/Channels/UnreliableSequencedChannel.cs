@@ -118,7 +118,7 @@ namespace Ruffles.Channeling.Channels
 				} */
 
 				if (SequencingUtils.Distance(sequence, _lastPollSequence, sizeof(ushort)) > 0)
-				// ! We're using _lastPollSequence instead of _incomingLowestAckedSequence to not drop old packets if we're still waiting for them to be polled by the game/MLAPI, which we can still be sorted properly
+				// ! We're using _lastPollSequence instead of _incomingLowestAckedSequence to not drop old packets if we're still waiting for them to be polled by the game/MLAPI, which can still be sorted properly
 				{
 					// Set the new sequence
 					_incomingLowestAckedSequence = sequence;

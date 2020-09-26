@@ -917,11 +917,6 @@ namespace Ruffles.Connections
 			{
 				CheckConnectionHeartbeats();
 			}
-
-			if (Config.EnableConnectionRequestResends)
-			{
-				CheckConnectionResends();
-			}
 		}
 
 		private void RunPathMTU()

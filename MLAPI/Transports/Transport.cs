@@ -160,5 +160,10 @@ namespace MLAPI.Transports
 		/// Initializes the transport
 		/// </summary>
 		public abstract void Init();
+
+		/// <summary>
+		/// Updates the transport after all app/game updates (useful to send all merged packets that were created during update for example)
+		/// </summary>
+		public abstract void LateApplicationUpdate();
 	}
 }

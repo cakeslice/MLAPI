@@ -743,6 +743,10 @@ namespace MLAPI
 				}
 			}
 		}
+		private void LateUpdate()
+		{
+			NetworkConfig.NetworkTransport.LateApplicationUpdate();
+		}
 
 		internal void UpdateNetworkTime(ulong clientId, float netTime, float receiveTime, bool warp = false)
 		{

@@ -61,7 +61,6 @@ namespace RufflesTransport
 		public int SocketThreads = 1;
 		public int ProcessingThreads = 0;
 		public int MaxMergeMessageSize = 1024;
-		public int MaxMergeDelay = 15;
 		public bool EnableMergedAcks = true;
 		public int MergedAckBytes = 8;
 		public int MaximumMTU = 4096;
@@ -290,6 +289,14 @@ namespace RufflesTransport
 			return (ulong)connections[connectionId].Roundtrip;
 		}
 
+		public override void LateApplicationUpdate()
+		{
+			if (socket != null && socket.Config.EnablePacketMerging)
+			{
+				socket.CheckMergedPackets();
+			}
+		}
+
 		public override void Shutdown()
 		{
 			channelIdToName.Clear();
@@ -379,7 +386,6 @@ namespace RufflesTransport
 				MaxFragments = MaxFragments,
 				MaxHandshakeResends = MaxHandshakeResends,
 				MaximumMTU = MaximumMTU,
-				MaxMergeDelay = MaxMergeDelay,
 				MaxMergeMessageSize = MaxMergeMessageSize,
 				MaxMTUAttempts = MaxMTUAttempts,
 				MergedAckBytes = MergedAckBytes,

@@ -213,7 +213,7 @@ namespace Ruffles.Connections
 
 			if (Config.EnablePacketMerging)
 			{
-				this.Merger = new MessageMerger(Config.MaxMergeMessageSize, Config.MinimumMTU, Config.MaxMergeDelay);
+				this.Merger = new MessageMerger(Config.MaxMergeMessageSize, Config.MinimumMTU);
 			}
 		}
 
@@ -908,11 +908,6 @@ namespace Ruffles.Connections
 				CheckConnectionResends();
 			}
 
-			if (Config.EnablePacketMerging)
-			{
-				CheckMergedPackets();
-			}
-
 			if (Config.EnableTimeouts)
 			{
 				CheckConnectionTimeouts();
@@ -1095,7 +1090,7 @@ namespace Ruffles.Connections
 			}
 		}
 
-		private void CheckMergedPackets()
+		public void CheckMergedPackets()
 		{
 			_stateLock.EnterReadLock();
 
@@ -1103,7 +1098,7 @@ namespace Ruffles.Connections
 			{
 				if (State == ConnectionState.Connected)
 				{
-					ArraySegment<byte>? mergedPayload = Merger.TryFlush(false);
+					ArraySegment<byte>? mergedPayload = Merger.TryFlush();
 
 					if (mergedPayload != null)
 					{
@@ -1222,7 +1217,7 @@ namespace Ruffles.Connections
 			if (Config.EnablePacketMerging)
 			{
 				// Try to get one last flush
-				ArraySegment<byte>? mergedPayload = Merger.TryFlush(true);
+				ArraySegment<byte>? mergedPayload = Merger.TryFlush();
 
 				if (mergedPayload != null)
 				{

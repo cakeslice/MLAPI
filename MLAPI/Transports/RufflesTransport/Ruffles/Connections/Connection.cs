@@ -151,13 +151,14 @@ namespace Ruffles.Connections
 		private readonly UnreliableOrderedChannel HeartbeatChannel;
 		private readonly MessageMerger Merger;
 		internal readonly IChannel[] Channels = new IChannel[Constants.MAX_CHANNELS];
+		private bool hasUnreliableSequencedChannel = false;
+		private byte unreliableSequencedChannelID;
 
 		// Pre connection challenge values
 		internal ulong PreConnectionChallengeTimestamp;
 		internal ulong PreConnectionChallengeCounter;
 		internal bool PreConnectionChallengeSolved;
 		internal ulong PreConnectionChallengeIV;
-
 
 		// Handshake resend values
 		internal int HandshakeResendAttempts;
@@ -167,6 +168,31 @@ namespace Ruffles.Connections
 		private SocketConfig Config => Socket.Config;
 
 		private readonly ReaderWriterLockSlim _stateLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+
+		// Event queue
+		private ConcurrentCircularQueue<NetworkEvent> _userEventQueue;
+		public bool IsUserEventQueueActive { get; private set; }
+		public void EnqueueUserEvent(NetworkEvent @event)
+		{
+			if (_userEventQueue != null)
+			{
+				if (hasUnreliableSequencedChannel && @event.ChannelId == unreliableSequencedChannelID)
+				{
+					_userEventQueue.Enqueue(@event, true, @event.Sequence);
+				}
+				else
+					_userEventQueue.Enqueue(@event);
+			}
+			else
+				Logging.LogInfo("Connection: Skipped enqueue of user event because _userEventQueue was released! (" + @event.Type + ")");
+		}
+		public bool DequeueUserEvent(out NetworkEvent @event)
+		{
+			bool success = _userEventQueue.TryDequeue(out NetworkEvent @e);
+			@event = @e;
+
+			return success;
+		}
 
 		internal Connection(ulong id, ConnectionState state, IPEndPoint endpoint, RuffleSocket socket)
 		{
@@ -215,6 +241,10 @@ namespace Ruffles.Connections
 			{
 				this.Merger = new MessageMerger(Config.MaxMergeMessageSize, Config.MinimumMTU);
 			}
+
+			if (Logging.CurrentLogLevel <= LogLevel.Debug) Logging.LogInfo("Allocating " + Config.EventQueueSize + " event slots");
+			this._userEventQueue = new ConcurrentCircularQueue<NetworkEvent>(Config.EventQueueSize, true);
+			this.IsUserEventQueueActive = true;
 		}
 
 		/// <summary>
@@ -347,6 +377,19 @@ namespace Ruffles.Connections
 						_stateLock.ExitWriteLock();
 					}
 
+					//
+
+					IsUserEventQueueActive = false;
+					while (_userEventQueue != null && _userEventQueue.TryDequeue(out NetworkEvent networkEvent))
+					{
+						// Recycle all packets to prevent leak detection
+						networkEvent.Recycle();
+					}
+					// Release user queue
+					_userEventQueue = null;
+
+					//
+
 					// Remove from global lookup
 					Socket.RemoveConnection(this);
 
@@ -433,8 +476,15 @@ namespace Ruffles.Connections
 					{
 						for (byte i = 0; i < channelTypes.Count; i++)
 						{
+							ChannelType channelType = ChannelTypeUtils.FromByte(channelTypes.Array[channelTypes.Offset + i]);
+
 							// Assign the channel
-							Channels[i] = Socket.ChannelPool.GetChannel(ChannelTypeUtils.FromByte(channelTypes.Array[channelTypes.Offset + i]), i, this, Config, MemoryManager);
+							Channels[i] = Socket.ChannelPool.GetChannel(channelType, i, this, Config, MemoryManager);
+							if (channelType == ChannelType.UnreliableSequenced)
+							{
+								hasUnreliableSequencedChannel = true;
+								unreliableSequencedChannelID = i;
+							}
 						}
 
 						// Change state to connected
@@ -1222,6 +1272,8 @@ namespace Ruffles.Connections
 				// Clean the merger
 				Merger.Clear();
 			}
+
+			//
 
 			// Reset all channels, releasing memory etc
 			for (int i = 0; i < Channels.Length; i++)

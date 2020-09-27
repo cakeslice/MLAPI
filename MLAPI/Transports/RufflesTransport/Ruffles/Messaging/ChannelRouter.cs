@@ -57,6 +57,8 @@ namespace Ruffles.Messaging
 
 				if (incomingPointers != null)
 				{
+					ushort sequence = (ushort)(payload.Array[payload.Offset] | (ushort)(payload.Array[payload.Offset + 1] << 8)); // TODO: This is already calculated inside HandleIncomingMessagePoll, we could just get it from there instead of doing this again...
+
 					// There is new packets
 					for (int i = 0; i < incomingPointers.VirtualCount; i++)
 					{
@@ -91,6 +93,7 @@ namespace Ruffles.Messaging
 								InternalMemory = memory,
 								SocketReceiveTime = NetTime.Now,
 								ChannelId = channelId,
+								Sequence = sequence,
 								MemoryManager = memoryManager,
 								EndPoint = connection.EndPoint
 							});

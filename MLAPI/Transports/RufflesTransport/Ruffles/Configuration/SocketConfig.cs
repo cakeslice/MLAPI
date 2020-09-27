@@ -20,10 +20,10 @@ namespace Ruffles.Configuration
 		/// </summary>
 		public bool EnableSyncronizedCallbacks = true;
 		/// <summary>
-		/// The size of the global event queue. 
+		/// The size of the event queue per connection. 
 		/// If this gets full no more events can be processed and the application will freeze until it is polled.
 		/// </summary>
-		public int EventQueueSize = 1024 * 8;
+		public int EventQueueSize = 256;
 		/// <summary>
 		/// The size of the processing queue.
 		/// If this gets full. Packet processing will be stalled until the ProcessorThreads can catch up.

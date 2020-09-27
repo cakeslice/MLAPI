@@ -51,6 +51,7 @@ namespace Ruffles.Channeling
 		/// </summary>
 		ReliableFragmented = 7,
 		/// <summary>
+		/// ! WARNING: Only 1 UnreliableSequenced channel is supported per connection!
 		/// Messages are not guaranteed to be delivered, the order is guaranteed.
 		/// Messages are sorted while waiting for game to read them, if too old they get dropped.
 		/// Duplicate packets are dropped.

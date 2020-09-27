@@ -28,6 +28,7 @@ namespace RufflesTransport
 		[Header("Transport")]
 		public string ConnectAddress = "127.0.0.1";
 		public ushort Port = 7777;
+		[Tooltip("WARNING: Only 1 instance of the UnreliableSequenced channel is supported!")]
 		public List<RufflesChannel> Channels = new List<RufflesChannel>();
 		[Tooltip("Used by default for RPCs and SyncedVars/NetworkedVars")]
 		public Ruffles.Channeling.ChannelType MLAPIReliableEquivalent = Ruffles.Channeling.ChannelType.Reliable;
@@ -43,7 +44,7 @@ namespace RufflesTransport
 		[Header("SocketConfig")]
 		public bool EnableSyncronizationEvent = false;
 		public bool EnableSyncronizedCallbacks = false;
-		public int EventQueueSize = 1024 * 8;
+		public int EventQueueSize = 256;
 		public int ProcessingQueueSize = 1024 * 8;
 		public int HeapPointersPoolSize = 1024;
 		public int HeapMemoryPoolSize = 1024;

@@ -75,8 +75,9 @@ namespace Ruffles.Core
 		// Syncronized callbacks
 		private readonly ReaderWriterLockSlim _syncronizedCallbacksLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 		private readonly List<NetTuple<SynchronizationContext, SendOrPostCallback>> _syncronizedCallbacks = new List<NetTuple<SynchronizationContext, SendOrPostCallback>>();
-		// Event queue
-		private ConcurrentCircularQueue<NetworkEvent> _userEventQueue;
+
+		// Global event queue
+		private ConcurrentCircularQueue<NetworkEvent> _globalEventQueue;
 
 		// Processing queue
 		private ConcurrentCircularQueue<NetTuple<HeapMemory, IPEndPoint>> _processingQueue;
@@ -209,7 +210,10 @@ namespace Ruffles.Core
 
 		internal void PublishEvent(NetworkEvent @event)
 		{
-			_userEventQueue.Enqueue(@event);
+			if (@event.Connection != null && @event.Connection.IsUserEventQueueActive)
+				@event.Connection.EnqueueUserEvent(@event);
+			else
+				_globalEventQueue.Enqueue(@event);
 
 			if (Config.EnableSyncronizationEvent)
 			{
@@ -262,8 +266,8 @@ namespace Ruffles.Core
 				if (Logging.CurrentLogLevel <= LogLevel.Debug) Logging.LogInfo("Simulator DISABLED");
 			}
 
-			if (Logging.CurrentLogLevel <= LogLevel.Debug) Logging.LogInfo("Allocating " + Config.EventQueueSize + " event slots");
-			_userEventQueue = new ConcurrentCircularQueue<NetworkEvent>(Config.EventQueueSize);
+			if (Logging.CurrentLogLevel <= LogLevel.Debug) Logging.LogInfo("Allocating " + Config.EventQueueSize + " GLOBAL event slots");
+			_globalEventQueue = new ConcurrentCircularQueue<NetworkEvent>(Config.EventQueueSize, true);
 
 			if (Config.ProcessingThreads > 0)
 			{
@@ -272,7 +276,7 @@ namespace Ruffles.Core
 			}
 			else
 			{
-				if (Logging.CurrentLogLevel <= LogLevel.Debug) Logging.LogInfo("Not allocating processingQueue beucase ProcessingThreads is set to 0");
+				if (Logging.CurrentLogLevel <= LogLevel.Debug) Logging.LogInfo("Not allocating processingQueue because ProcessingThreads is set to 0");
 			}
 
 			if (Config.TimeBasedConnectionChallenge)
@@ -458,14 +462,13 @@ namespace Ruffles.Core
 				// Release simulator
 				Simulator = null;
 
-				while (_userEventQueue != null && _userEventQueue.TryDequeue(out NetworkEvent networkEvent))
+				while (_globalEventQueue != null && _globalEventQueue.TryDequeue(out NetworkEvent networkEvent))
 				{
 					// Recycle all packets to prevent leak detection
 					networkEvent.Recycle();
 				}
-
-				// Release user queue
-				_userEventQueue = null;
+				// Release global event queue
+				_globalEventQueue = null;
 
 				while (_processingQueue != null && _processingQueue.TryDequeue(out NetTuple<HeapMemory, IPEndPoint> packet))
 				{
@@ -1004,10 +1007,15 @@ namespace Ruffles.Core
 		/// <returns>The poll result.</returns>
 		public NetworkEvent Poll()
 		{
-			if (_userEventQueue.TryDequeue(out NetworkEvent @event))
+			for (Connection connection = _headConnection; connection != null; connection = connection.NextConnection)
 			{
-				return @event;
+				if (connection.IsUserEventQueueActive && connection.DequeueUserEvent(out NetworkEvent @event))
+				{
+					return @event;
+				}
 			}
+			if (_globalEventQueue.TryDequeue(out NetworkEvent @e))
+				return @e;
 
 			return new NetworkEvent()
 			{
@@ -1022,6 +1030,14 @@ namespace Ruffles.Core
 				MemoryManager = MemoryManager,
 				EndPoint = null
 			};
+		}
+
+		public void CheckMergedPackets()
+		{
+			for (Connection connection = _headConnection; connection != null; connection = connection.NextConnection)
+			{
+				connection.CheckMergedPackets();
+			}
 		}
 
 		internal bool SendRaw(IPEndPoint endpoint, ArraySegment<byte> payload)

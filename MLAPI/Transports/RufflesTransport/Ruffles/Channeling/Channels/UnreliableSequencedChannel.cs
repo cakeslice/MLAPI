@@ -4,6 +4,7 @@ using Ruffles.Connections;
 using Ruffles.Memory;
 using Ruffles.Messaging;
 using Ruffles.Utils;
+using Ruffles.Collections;
 
 namespace Ruffles.Channeling.Channels
 {
@@ -11,6 +12,7 @@ namespace Ruffles.Channeling.Channels
 	{
 		// Incoming sequencing
 		private ushort _incomingLowestAckedSequence;
+		private readonly SlidingWindow<bool> _incomingAckedPackets; // Used just for duplicate detection
 		private readonly object _receiveLock = new object();
 
 		// Outgoing sequencing
@@ -29,6 +31,8 @@ namespace Ruffles.Channeling.Channels
 			this.connection = connection;
 			this.memoryManager = memoryManager;
 			this.config = config;
+
+			_incomingAckedPackets = new SlidingWindow<bool>(config.ReliabilityWindowSize);
 		}
 
 		public void CreateOutgoingMessage(ArraySegment<byte> payload, bool noMerge, ulong notificationKey)
@@ -102,13 +106,21 @@ namespace Ruffles.Channeling.Channels
 		}
 		public HeapPointers HandleIncomingMessagePoll(ArraySegment<byte> payload)
 		{
-			// TODO: We still need to sort them... BUT it can't be done here, it needs to be done when pooling all of them and sorting before processing OR when inserting in the ConcurrentCircularQueue
+			// -> Sorting happens in the ConcurrentCircularQueue when messages are Enqueued
+
+			//
 
 			// Read the sequence number
 			ushort sequence = (ushort)(payload.Array[payload.Offset] | (ushort)(payload.Array[payload.Offset + 1] << 8));
 
 			lock (_receiveLock)
 			{
+				if (_incomingAckedPackets.Contains(sequence))
+				{
+					// We have already received this message. Ignore it.
+					return null;
+				}
+
 				/* if (SequencingUtils.Distance(sequence, _incomingLowestAckedSequence, sizeof(ushort)) <= 0)
 				{
 					if (SequencingUtils.Distance(sequence, _lastPollSequence, sizeof(ushort)) > 0)
@@ -122,6 +134,7 @@ namespace Ruffles.Channeling.Channels
 				{
 					// Set the new sequence
 					_incomingLowestAckedSequence = sequence;
+					_incomingAckedPackets.Set(sequence, true);
 
 					// Alloc pointers
 					HeapPointers pointers = memoryManager.AllocHeapPointers(1);

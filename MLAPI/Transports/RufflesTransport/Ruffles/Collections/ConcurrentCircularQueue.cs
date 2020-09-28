@@ -83,7 +83,9 @@ namespace Ruffles.Collections
 							for (int k = _readHead; k <= _writeHead; k++)
 							{
 								int arrayIndex = NumberUtils.WrapMod(k, _array.Length);
-								string s0 = _sequences[arrayIndex] + " ";
+
+								//string s0 = _sequences[arrayIndex] + " ";
+
 								if (_sequences[arrayIndex] != -1000 && SequencingUtils.Distance((ulong)_sequences[arrayIndex], (ulong)sequence, sizeof(ushort)) > 0)
 								{
 									if (k != _writeHead)
@@ -107,8 +109,8 @@ namespace Ruffles.Collections
 										Thread.MemoryBarrier();
 										_sequences[arrayIndex] = sequence;
 
-										/* Logging.LogInfo("Need sorting: ... " + s0 + "| " + s1 + "*" + sequence + " (" + _readHead + " - " + _writeHead + ")");
-										Logging.LogInfo("----  Sorted: ... *" + sequence + " | " + s2 + " (" + _readHead + " - " + _writeHead + ")"); */
+										/* Logging.LogInfo("Needs sorting: ... " + s0 + "| " + s1 + "*" + sequence + " (" + _readHead + " - " + _writeHead + ")");
+										Logging.LogInfo("-----  Sorted: ... *" + sequence + " | " + s2 + " (" + _readHead + " - " + _writeHead + ")"); */
 
 										done = true;
 										break;

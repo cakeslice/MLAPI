@@ -23,7 +23,6 @@ public class NetworkingManagerEditor : Editor
 	private SerializedProperty protocolVersionProperty;
 	private SerializedProperty allowRuntimeSceneChangesProperty;
 	private SerializedProperty networkTransportProperty;
-	private SerializedProperty receiveTickrateProperty;
 	private SerializedProperty maxReceiveEventsPerTickRateProperty;
 	private SerializedProperty lagCompensationTickrateProperty;
 	private SerializedProperty eventTickrateProperty;
@@ -105,7 +104,6 @@ public class NetworkingManagerEditor : Editor
 		protocolVersionProperty = networkConfigProperty.FindPropertyRelative("ProtocolVersion");
 		allowRuntimeSceneChangesProperty = networkConfigProperty.FindPropertyRelative("AllowRuntimeSceneChanges");
 		networkTransportProperty = networkConfigProperty.FindPropertyRelative("NetworkTransport");
-		receiveTickrateProperty = networkConfigProperty.FindPropertyRelative("ReceiveTickrate");
 		maxReceiveEventsPerTickRateProperty = networkConfigProperty.FindPropertyRelative("MaxReceiveEventsPerTickRate");
 		lagCompensationTickrateProperty = networkConfigProperty.FindPropertyRelative("LagCompensationTickRate");
 		eventTickrateProperty = networkConfigProperty.FindPropertyRelative("EventTickrate");
@@ -147,7 +145,6 @@ public class NetworkingManagerEditor : Editor
 		protocolVersionProperty = networkConfigProperty.FindPropertyRelative("ProtocolVersion");
 		allowRuntimeSceneChangesProperty = networkConfigProperty.FindPropertyRelative("AllowRuntimeSceneChanges");
 		networkTransportProperty = networkConfigProperty.FindPropertyRelative("NetworkTransport");
-		receiveTickrateProperty = networkConfigProperty.FindPropertyRelative("ReceiveTickrate");
 		maxReceiveEventsPerTickRateProperty = networkConfigProperty.FindPropertyRelative("MaxReceiveEventsPerTickRate");
 		lagCompensationTickrateProperty = networkConfigProperty.FindPropertyRelative("LagCompensationTickRate");
 		eventTickrateProperty = networkConfigProperty.FindPropertyRelative("EventTickrate");
@@ -306,7 +303,6 @@ public class NetworkingManagerEditor : Editor
 			}
 
 			EditorGUILayout.LabelField("Performance", EditorStyles.boldLabel);
-			EditorGUILayout.PropertyField(receiveTickrateProperty);
 			EditorGUILayout.PropertyField(maxReceiveEventsPerTickRateProperty);
 			EditorGUILayout.PropertyField(lagCompensationTickrateProperty);
 			EditorGUILayout.PropertyField(eventTickrateProperty);

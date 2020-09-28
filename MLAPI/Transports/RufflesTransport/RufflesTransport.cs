@@ -58,6 +58,7 @@ namespace RufflesTransport
 		public bool AllowBroadcasts = false;
 		public bool EnableAckNotifications = false;
 		public bool ReuseChannels = true;
+		public int LogicDelay = 20;
 		public int LogicThreads = 1;
 		public int SocketThreads = 1;
 		public int ProcessingThreads = 0;
@@ -356,8 +357,6 @@ namespace RufflesTransport
 
 		private SocketConfig GetConfig(bool server, MLAPI.Configuration.NetworkConfig mlapiConfig)
 		{
-			int LogicDelay = 1000 / mlapiConfig.ReceiveTickrate;
-			MLAPI.Logging.NetworkLog.LogInfo("Ruffles LogicDelay changed to " + mlapiConfig.ReceiveTickrate.ToString() + " ticks " + "(" + LogicDelay + "ms)");
 			SocketConfig config = new SocketConfig()
 			{
 				AllowUnconnectedMessages = AllowUnconnectedMessages,

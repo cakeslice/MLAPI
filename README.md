@@ -8,7 +8,7 @@ I will also develop some real world usage examples of the framework based on my 
 
 As for the default transport I removed the deprecated UNET and chose MidLevel/Ruffles because it looks like the best managed LLAPI out there and was made by the same developer of MLAPI. If the original developer is reading this, thank you for MLAPI and Ruffles, they're really good. 🙂
 
-After the game's release into production I also intend to commit all bugs and problems I can fix as well as submitting pull requests to the original repository.
+After the game's release into production I also intend to commit all bugs and problems I can fix as well as submitting pull requests to the original repository (if applicable).
 
 ### Installation
 

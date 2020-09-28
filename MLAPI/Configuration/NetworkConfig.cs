@@ -63,12 +63,6 @@ namespace MLAPI.Configuration
 		public bool CreatePlayerPrefab = true;
 
 		/// <summary>
-		/// Amount of times per second the receive queue of the Transport is emptied and all messages inside are processed.
-		/// </summary>
-		[Tooltip("The amount of times per second the receive queue of the Transport is emptied from pending incoming messages")]
-		public int ReceiveTickrate = 64;
-
-		/// <summary>
 		/// The max amount of messages to process per ReceiveTickrate. This is to prevent flooding.
 		/// </summary>
 		[Tooltip("The maximum amount of Receive events to poll per Receive tick. This is to prevent flooding and freezing on the server")]
@@ -257,7 +251,6 @@ namespace MLAPI.Configuration
 						writer.WriteString(config.RegisteredScenes[i]);
 					}
 
-					writer.WriteInt32Packed(config.ReceiveTickrate);
 					writer.WriteInt32Packed(config.MaxReceiveEventsPerTickRate);
 					writer.WriteInt32Packed(config.LagCompensationTickRate);
 					writer.WriteInt32Packed(config.EventTickrate);
@@ -307,7 +300,6 @@ namespace MLAPI.Configuration
 						config.RegisteredScenes.Add(reader.ReadString().ToString());
 					}
 
-					config.ReceiveTickrate = reader.ReadInt32Packed();
 					config.MaxReceiveEventsPerTickRate = reader.ReadInt32Packed();
 					config.LagCompensationTickRate = reader.ReadInt32Packed();
 					config.EventTickrate = reader.ReadInt32Packed();

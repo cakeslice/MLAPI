@@ -23,6 +23,8 @@ public class NetworkingManagerEditor : Editor
 	private SerializedProperty protocolVersionProperty;
 	private SerializedProperty allowRuntimeSceneChangesProperty;
 	private SerializedProperty networkTransportProperty;
+	private SerializedProperty networkedTransformTickrateProperty;
+	private SerializedProperty clientCommandTickrateProperty;
 	private SerializedProperty maxReceiveEventsPerTickRateProperty;
 	private SerializedProperty lagCompensationTickrateProperty;
 	private SerializedProperty eventTickrateProperty;
@@ -104,6 +106,8 @@ public class NetworkingManagerEditor : Editor
 		protocolVersionProperty = networkConfigProperty.FindPropertyRelative("ProtocolVersion");
 		allowRuntimeSceneChangesProperty = networkConfigProperty.FindPropertyRelative("AllowRuntimeSceneChanges");
 		networkTransportProperty = networkConfigProperty.FindPropertyRelative("NetworkTransport");
+		networkedTransformTickrateProperty = networkConfigProperty.FindPropertyRelative("NetworkedTransformTickrate");
+		clientCommandTickrateProperty = networkConfigProperty.FindPropertyRelative("ClientCommandTickrate");
 		maxReceiveEventsPerTickRateProperty = networkConfigProperty.FindPropertyRelative("MaxReceiveEventsPerTickRate");
 		lagCompensationTickrateProperty = networkConfigProperty.FindPropertyRelative("LagCompensationTickRate");
 		eventTickrateProperty = networkConfigProperty.FindPropertyRelative("EventTickrate");

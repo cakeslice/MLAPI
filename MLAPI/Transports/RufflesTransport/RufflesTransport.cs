@@ -34,9 +34,13 @@ namespace RufflesTransport
 		public Ruffles.Channeling.ChannelType MLAPIReliableEquivalent = Ruffles.Channeling.ChannelType.Reliable;
 		[Tooltip("Used for Spawning/Destroying objects and core internal communication")]
 		public Ruffles.Channeling.ChannelType MLAPIReliableFragmentedSequencedEquivalent = Ruffles.Channeling.ChannelType.ReliableSequencedFragmented;
+		[Tooltip("Used to send state bundles (can only be used to send 1 unique bundle struct or sequencing won't work)")]
 		public Ruffles.Channeling.ChannelType MLAPIReliableSequencedEquivalent = Ruffles.Channeling.ChannelType.ReliableSequenced;
 		[Tooltip("Used for time syncing (updated occasionally, can be unreliable)")]
 		public Ruffles.Channeling.ChannelType MLAPIUnreliableEquivalent = Ruffles.Channeling.ChannelType.Unreliable;
+		[Tooltip("Used for networked transform syncing (NetworkedTransformTickrate)")]
+		public Ruffles.Channeling.ChannelType MLAPIUnreliableOrderedEquivalent = Ruffles.Channeling.ChannelType.UnreliableOrdered;
+		[Tooltip("Used for client commands (ClientCommandTickrate)")]
 		public Ruffles.Channeling.ChannelType MLAPIUnreliableSequencedEquivalent = Ruffles.Channeling.ChannelType.UnreliableSequenced;
 		public int TransportBufferSize = 1024 * 8;
 		public LogLevel LogLevel = LogLevel.Info;
@@ -457,6 +461,8 @@ namespace RufflesTransport
 					return MLAPIReliableSequencedEquivalent;
 				case ChannelType.Unreliable:
 					return MLAPIUnreliableEquivalent;
+				case ChannelType.UnreliableOrdered:
+					return MLAPIUnreliableOrderedEquivalent;
 				case ChannelType.UnreliableSequenced:
 					return MLAPIUnreliableSequencedEquivalent;
 			}

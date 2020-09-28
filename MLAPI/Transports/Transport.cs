@@ -89,6 +89,21 @@ namespace MLAPI.Transports
 				{
 					 Name = "MLAPI_TIME_SYNC",
 					 Type = ChannelType.Unreliable
+				},
+				new TransportChannel()
+				{
+					 Name = "MLAPI_SERVER_TICK",
+					 Type = ChannelType.UnreliableOrdered
+				},
+				new TransportChannel()
+				{
+					 Name = "MLAPI_CLIENT_TICK",
+					 Type = ChannelType.UnreliableSequenced
+				},
+				new TransportChannel()
+				{
+					 Name = "MLAPI_STATE_BUNDLE",
+					 Type = ChannelType.ReliableSequenced
 				}
 		};
 

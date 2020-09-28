@@ -63,6 +63,17 @@ namespace MLAPI.Configuration
 		public bool CreatePlayerPrefab = true;
 
 		/// <summary>
+		/// The amount of times per second the networked transforms are sent to clients
+		/// </summary>
+		[Tooltip("The amount of times per second the networked transforms are sent to clients (UnreliableOrdered)")]
+		public int NetworkedTransformTickrate = 20;
+		/// <summary>
+		/// The amount of times per second the internal event loop will run for NetworkedVar checking
+		/// </summary>
+		[Tooltip("The amount of times per second the client commands are sent (UnreliableSequenced)")]
+		public int ClientCommandTickrate = 50;
+
+		/// <summary>
 		/// The max amount of messages to process per ReceiveTickrate. This is to prevent flooding.
 		/// </summary>
 		[Tooltip("The maximum amount of Receive events to poll per Receive tick. This is to prevent flooding and freezing on the server")]
@@ -75,7 +86,7 @@ namespace MLAPI.Configuration
 		/// <summary>
 		/// The amount of times per second the internal event loop will run for NetworkedVar checking
 		/// </summary>
-		[Tooltip("The amount of times per second the internal event loop will run for NetworkedVar/SyncedVar checking")]
+		[Tooltip("[TODO: Maybe should be removed and just run at the game framerate???] The amount of times per second the internal event loop will run for NetworkedVar/SyncedVar checking")]
 		public int EventTickrate = 64;
 		/// <summary>
 		/// The maximum amount of NetworkedObject's to process per tick.
@@ -251,6 +262,8 @@ namespace MLAPI.Configuration
 						writer.WriteString(config.RegisteredScenes[i]);
 					}
 
+					writer.WriteInt32Packed(config.NetworkedTransformTickrate);
+					writer.WriteInt32Packed(config.ClientCommandTickrate);
 					writer.WriteInt32Packed(config.MaxReceiveEventsPerTickRate);
 					writer.WriteInt32Packed(config.LagCompensationTickRate);
 					writer.WriteInt32Packed(config.EventTickrate);
@@ -300,6 +313,8 @@ namespace MLAPI.Configuration
 						config.RegisteredScenes.Add(reader.ReadString().ToString());
 					}
 
+					config.NetworkedTransformTickrate = reader.ReadInt32Packed();
+					config.ClientCommandTickrate = reader.ReadInt32Packed();
 					config.MaxReceiveEventsPerTickRate = reader.ReadInt32Packed();
 					config.LagCompensationTickRate = reader.ReadInt32Packed();
 					config.EventTickrate = reader.ReadInt32Packed();

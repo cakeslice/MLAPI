@@ -43,11 +43,6 @@ namespace MLAPI.Prototyping
 		[SerializeField]
 		public TransformType TransformTypeToSync = TransformType.Transform3D;
 		/// <summary>
-		/// The base amount of sends per seconds to use when range is disabled
-		/// </summary>
-		[Range(0, 120)]
-		public float FixedSendsPerSecond = 20f;
-		/// <summary>
 		/// Is the sends per second assumed to be the same across all instances
 		/// </summary>
 		[Tooltip("This assumes that the SendsPerSecond is synced across clients")]
@@ -95,7 +90,6 @@ namespace MLAPI.Prototyping
 		private Vector3 lerpEndPos;
 		private Quaternion lerpEndRot;
 
-		private float lastSendTime;
 		private Vector3 lastSentPos;
 		private Quaternion lastSentRot;
 
@@ -161,23 +155,36 @@ namespace MLAPI.Prototyping
 			lerpEndRot = transform.rotation;
 		}
 
-		private void Update()
+		private void OnEnable()
+		{
+			if (NetworkingManager.Singleton != null)
+				NetworkingManager.Singleton.OnNetworkedTransformUpdate += SendData;
+		}
+		private void OnDisable()
+		{
+			if (NetworkingManager.Singleton != null)
+				NetworkingManager.Singleton.OnNetworkedTransformUpdate -= SendData;
+		}
+
+		private void SendData()
 		{
 			if (IsOwner)
 			{
-				if (NetworkingManager.Singleton.NetworkTime - lastSendTime >= (1f / FixedSendsPerSecond) && (SyncPosition && (Vector3.Distance(transform.position, lastSentPos) > MinMeters) || (SyncRotation && Quaternion.Angle(transform.rotation, lastSentRot) > MinDegrees)))
+				//if (SyncPosition && (Vector3.Distance(transform.position, lastSentPos) > MinMeters) || (SyncRotation && Quaternion.Angle(transform.rotation, lastSentRot) > MinDegrees))
 				{
-					lastSendTime = NetworkingManager.Singleton.NetworkTime;
 					lastSentPos = transform.position;
 					lastSentRot = transform.rotation;
 
 					if (IsServer)
-						InvokeApplyTransformOnEveryoneExcept(OwnerClientId, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_SERVER_TICK" : Channel);
+						InvokeApplyTransformOnEveryone(transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_SERVER_TICK" : Channel);
 					else
 						InvokeServerRpc(SubmitTransform, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_SERVER_TICK" : Channel);
 				}
 			}
-			else
+		}
+		private void Update()
+		{
+			if (!IsOwner)
 			{
 				//If we are server and interpolation is turned on for server OR we are not server and interpolation is turned on
 				if ((IsServer && InterpolateServer && InterpolatePosition) || (!IsServer && InterpolatePosition))
@@ -188,7 +195,7 @@ namespace MLAPI.Prototyping
 						lerpT = 1f;
 					}
 
-					float sendDelay = (IsServer || !EnableRange || !AssumeSyncedSends || NetworkingManager.Singleton.ConnectedClients[NetworkingManager.Singleton.LocalClientId].PlayerObject == null) ? (1f / FixedSendsPerSecond) : GetTimeForLerp(transform.position, NetworkingManager.Singleton.ConnectedClients[NetworkingManager.Singleton.LocalClientId].PlayerObject.transform.position);
+					float sendDelay = (IsServer || !EnableRange || !AssumeSyncedSends || NetworkingManager.Singleton.ConnectedClients[NetworkingManager.Singleton.LocalClientId].PlayerObject == null) ? (1f / NetworkingManager.Singleton.NetworkConfig.NetworkedTransformTickrate) : GetTimeForLerp(transform.position, NetworkingManager.Singleton.ConnectedClients[NetworkingManager.Singleton.LocalClientId].PlayerObject.transform.position);
 					lerpT += Time.unscaledDeltaTime / sendDelay;
 
 					if (ExtrapolatePosition && Time.unscaledTime - lastRecieveTime < sendDelay * MaxSendsToExtrapolate)
@@ -227,25 +234,25 @@ namespace MLAPI.Prototyping
 					InvokeClientRpcOnClient(ApplyTransformOnlyRotation, clientId, rotation, channelName);
 			}
 		}
-		void InvokeApplyTransformOnEveryoneExcept(ulong clientId, Vector3 position, Quaternion rotation, string channelName)
+		void InvokeApplyTransformOnEveryone(Vector3 position, Quaternion rotation, string channelName)
 		{
 			if (TransformTypeToSync == TransformType.Transform2D)
 			{
 				if (SyncPosition && SyncRotation)
-					InvokeClientRpcOnEveryoneExcept(ApplyTransform2D, clientId, (Vector2)position, rotation.eulerAngles.z, channelName);
+					InvokeClientRpcOnEveryone(ApplyTransform2D, (Vector2)position, rotation.eulerAngles.z, channelName);
 				else if (SyncPosition)
-					InvokeClientRpcOnEveryoneExcept(ApplyTransform2DOnlyPosition, clientId, (Vector2)position, channelName);
+					InvokeClientRpcOnEveryone(ApplyTransform2DOnlyPosition, (Vector2)position, channelName);
 				else if (SyncRotation)
-					InvokeClientRpcOnEveryoneExcept(ApplyTransform2DOnlyRotation, clientId, rotation.eulerAngles.z, channelName);
+					InvokeClientRpcOnEveryone(ApplyTransform2DOnlyRotation, rotation.eulerAngles.z, channelName);
 			}
 			else if (TransformTypeToSync == TransformType.Transform3D)
 			{
 				if (SyncPosition && SyncRotation)
-					InvokeClientRpcOnEveryoneExcept(ApplyTransform, clientId, position, rotation, channelName);
+					InvokeClientRpcOnEveryone(ApplyTransform, position, rotation, channelName);
 				else if (SyncPosition)
-					InvokeClientRpcOnEveryoneExcept(ApplyTransformOnlyPosition, clientId, position, channelName);
+					InvokeClientRpcOnEveryone(ApplyTransformOnlyPosition, position, channelName);
 				else if (SyncRotation)
-					InvokeClientRpcOnEveryoneExcept(ApplyTransformOnlyRotation, clientId, rotation, channelName);
+					InvokeClientRpcOnEveryone(ApplyTransformOnlyRotation, rotation, channelName);
 			}
 		}
 
@@ -412,7 +419,7 @@ namespace MLAPI.Prototyping
 					Vector3? receiverPosition = NetworkingManager.Singleton.ConnectedClientsList[i].PlayerObject == null ? null : new Vector3?(NetworkingManager.Singleton.ConnectedClientsList[i].PlayerObject.transform.position);
 					Vector3? senderPosition = NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject == null ? null : new Vector3?(NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject.transform.position);
 
-					if ((receiverPosition == null || senderPosition == null && NetworkingManager.Singleton.NetworkTime - info.lastSent >= (1f / FixedSendsPerSecond)) || NetworkingManager.Singleton.NetworkTime - info.lastSent >= GetTimeForLerp(receiverPosition.Value, senderPosition.Value))
+					if ((receiverPosition == null || senderPosition == null && NetworkingManager.Singleton.NetworkTime - info.lastSent >= (1f / NetworkingManager.Singleton.NetworkConfig.NetworkedTransformTickrate)) || NetworkingManager.Singleton.NetworkTime - info.lastSent >= GetTimeForLerp(receiverPosition.Value, senderPosition.Value))
 					{
 						info.lastSent = NetworkingManager.Singleton.NetworkTime;
 						info.lastMissedPosition = null;
@@ -429,7 +436,7 @@ namespace MLAPI.Prototyping
 			}
 			else
 			{
-				InvokeApplyTransformOnEveryoneExcept(OwnerClientId, position, rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_SERVER_TICK" : Channel);
+				InvokeApplyTransformOnEveryone(position, rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_SERVER_TICK" : Channel);
 			}
 		}
 
@@ -451,7 +458,7 @@ namespace MLAPI.Prototyping
 				Vector3? receiverPosition = NetworkingManager.Singleton.ConnectedClientsList[i].PlayerObject == null ? null : new Vector3?(NetworkingManager.Singleton.ConnectedClientsList[i].PlayerObject.transform.position);
 				Vector3? senderPosition = NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject == null ? null : new Vector3?(NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject.transform.position);
 
-				if ((receiverPosition == null || senderPosition == null && NetworkingManager.Singleton.NetworkTime - info.lastSent >= (1f / FixedSendsPerSecond)) || NetworkingManager.Singleton.NetworkTime - info.lastSent >= GetTimeForLerp(receiverPosition.Value, senderPosition.Value))
+				if ((receiverPosition == null || senderPosition == null && NetworkingManager.Singleton.NetworkTime - info.lastSent >= (1f / NetworkingManager.Singleton.NetworkConfig.NetworkedTransformTickrate)) || NetworkingManager.Singleton.NetworkTime - info.lastSent >= GetTimeForLerp(receiverPosition.Value, senderPosition.Value))
 				{
 					Vector3? pos = NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject == null ? null : new Vector3?(NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject.transform.position);
 					Quaternion? rot = NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject == null ? null : new Quaternion?(NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject.transform.rotation);

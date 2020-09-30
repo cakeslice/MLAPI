@@ -34,7 +34,6 @@ namespace RufflesTransport
 		public Ruffles.Channeling.ChannelType MLAPIReliableEquivalent = Ruffles.Channeling.ChannelType.Reliable;
 		[Tooltip("Used for Spawning/Destroying objects and core internal communication")]
 		public Ruffles.Channeling.ChannelType MLAPIReliableFragmentedSequencedEquivalent = Ruffles.Channeling.ChannelType.ReliableSequencedFragmented;
-		[Tooltip("Used to send state bundles (can only be used to send 1 unique bundle struct or sequencing won't work)")]
 		public Ruffles.Channeling.ChannelType MLAPIReliableSequencedEquivalent = Ruffles.Channeling.ChannelType.ReliableSequenced;
 		[Tooltip("Used for time syncing (updated occasionally, can be unreliable)")]
 		public Ruffles.Channeling.ChannelType MLAPIUnreliableEquivalent = Ruffles.Channeling.ChannelType.Unreliable;

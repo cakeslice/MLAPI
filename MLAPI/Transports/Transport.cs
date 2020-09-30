@@ -99,11 +99,6 @@ namespace MLAPI.Transports
 				{
 					 Name = "MLAPI_CLIENT_TICK",
 					 Type = ChannelType.UnreliableSequenced
-				},
-				new TransportChannel()
-				{
-					 Name = "MLAPI_STATE_BUNDLE",
-					 Type = ChannelType.ReliableSequenced
 				}
 		};
 

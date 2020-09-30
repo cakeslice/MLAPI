@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Ruffles.Time;
+using Ruffles.Utils;
 
 namespace Ruffles.Messaging
 {
@@ -63,6 +64,9 @@ namespace Ruffles.Messaging
 			{
 				if (payload.Count + _position + 2 > _size)
 				{
+					if (Logging.CurrentLogLevel <= LogLevel.Info)
+						Logging.LogInfo("CAN'T MERGE PACKET, WON'T FIT!");
+
 					// Wont fit
 					return false;
 				}

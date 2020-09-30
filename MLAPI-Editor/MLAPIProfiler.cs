@@ -322,7 +322,7 @@ namespace UnityEditor
 				case TickType.Receive:
 					return new Color(0f, 0.85f, 0.85f, alpha ? 0.28f : 0.7f);
 				case TickType.Send:
-					return new Color(0, 0.55f, 1f, alpha ? 0.06f : 0.7f);
+					return new Color(0.85f, 0.85f, 0f, alpha ? 0.06f : 0.7f);
 				default:
 					return Color.clear;
 			}

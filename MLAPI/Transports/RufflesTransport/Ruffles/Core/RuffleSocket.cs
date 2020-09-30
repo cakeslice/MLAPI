@@ -1083,7 +1083,8 @@ namespace Ruffles.Core
 			// Unpack header, dont cast to MessageType enum for safety
 			HeaderPacker.Unpack(payload.Array[payload.Offset], out MessageType messageType);
 
-			if (Logging.CurrentLogLevel <= LogLevel.Debug) Logging.LogInfo("Unpacked packet. [MessageType=" + (MessageType)messageType + "]");
+			if (Logging.CurrentLogLevel <= LogLevel.Debug)
+				Logging.LogInfo("Unpacked " + (!allowMergeUnpack ? "from merged" : "") + " packet. [MessageType=" + (MessageType)messageType + "]");
 
 			switch (messageType)
 			{

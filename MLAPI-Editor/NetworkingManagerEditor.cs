@@ -149,6 +149,8 @@ public class NetworkingManagerEditor : Editor
 		protocolVersionProperty = networkConfigProperty.FindPropertyRelative("ProtocolVersion");
 		allowRuntimeSceneChangesProperty = networkConfigProperty.FindPropertyRelative("AllowRuntimeSceneChanges");
 		networkTransportProperty = networkConfigProperty.FindPropertyRelative("NetworkTransport");
+		networkedTransformTickrateProperty = networkConfigProperty.FindPropertyRelative("NetworkedTransformTickrate");
+		clientCommandTickrateProperty = networkConfigProperty.FindPropertyRelative("ClientCommandTickrate");
 		maxReceiveEventsPerTickRateProperty = networkConfigProperty.FindPropertyRelative("MaxReceiveEventsPerTickRate");
 		lagCompensationTickrateProperty = networkConfigProperty.FindPropertyRelative("LagCompensationTickRate");
 		eventTickrateProperty = networkConfigProperty.FindPropertyRelative("EventTickrate");
@@ -307,6 +309,8 @@ public class NetworkingManagerEditor : Editor
 			}
 
 			EditorGUILayout.LabelField("Performance", EditorStyles.boldLabel);
+			EditorGUILayout.PropertyField(networkedTransformTickrateProperty);
+			EditorGUILayout.PropertyField(clientCommandTickrateProperty);
 			EditorGUILayout.PropertyField(maxReceiveEventsPerTickRateProperty);
 			EditorGUILayout.PropertyField(lagCompensationTickrateProperty);
 			EditorGUILayout.PropertyField(eventTickrateProperty);

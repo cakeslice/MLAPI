@@ -168,23 +168,23 @@ namespace MLAPI.Prototyping
 
 		private void SendData()
 		{
-			if (IsOwner)
+			if (IsServer)//IsOwner)
 			{
-				//if (SyncPosition && (Vector3.Distance(transform.position, lastSentPos) > MinMeters) || (SyncRotation && Quaternion.Angle(transform.rotation, lastSentRot) > MinDegrees))
+				// ! if (SyncPosition && (Vector3.Distance(transform.position, lastSentPos) > MinMeters) || (SyncRotation && Quaternion.Angle(transform.rotation, lastSentRot) > MinDegrees))
 				{
 					lastSentPos = transform.position;
 					lastSentRot = transform.rotation;
 
 					if (IsServer)
 						InvokeApplyTransformOnEveryone(transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_SERVER_TICK" : Channel);
-					else
-						InvokeServerRpc(SubmitTransform, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_SERVER_TICK" : Channel);
+					/* else
+						InvokeServerRpc(SubmitTransform, transform.position, transform.rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_SERVER_TICK" : Channel); */
 				}
 			}
 		}
 		private void Update()
 		{
-			if (!IsOwner)
+			if (!IsServer)// && !IsOwner
 			{
 				//If we are server and interpolation is turned on for server OR we are not server and interpolation is turned on
 				if ((IsServer && InterpolateServer && InterpolatePosition) || (!IsServer && InterpolatePosition))
@@ -365,7 +365,7 @@ namespace MLAPI.Prototyping
 			}
 		}
 
-		[ServerRPC]
+		/* [ServerRPC]
 		private void SubmitTransform(Vector3 position, Quaternion rotation)
 		{
 			if (!enabled) return;
@@ -438,7 +438,7 @@ namespace MLAPI.Prototyping
 			{
 				InvokeApplyTransformOnEveryone(position, rotation, string.IsNullOrEmpty(Channel) ? "MLAPI_SERVER_TICK" : Channel);
 			}
-		}
+		} */
 
 		private void CheckForMissedSends()
 		{

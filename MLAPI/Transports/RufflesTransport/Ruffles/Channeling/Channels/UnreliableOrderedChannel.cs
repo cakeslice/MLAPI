@@ -117,6 +117,8 @@ namespace Ruffles.Channeling.Channels
 
 					return pointers;
 				}
+				/* else
+					Logging.LogInfo("Dropped packet in UnreliableOrdered channel..."); */
 
 				return null;
 			}

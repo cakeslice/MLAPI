@@ -58,6 +58,8 @@ namespace Ruffles.Messaging
 			}
 		}
 
+		/* int messageCount = 0;
+		string messageString = ""; */
 		internal bool TryWrite(ArraySegment<byte> payload)
 		{
 			lock (_lock)
@@ -65,7 +67,7 @@ namespace Ruffles.Messaging
 				if (payload.Count + _position + 2 > _size)
 				{
 					if (Logging.CurrentLogLevel <= LogLevel.Info)
-						Logging.LogInfo("CAN'T MERGE PACKET, WON'T FIT!");
+						Logging.LogWarning("Can't merge packet, won't fit");
 
 					// Wont fit
 					return false;
@@ -83,17 +85,31 @@ namespace Ruffles.Messaging
 					// Update the position
 					_position += 2 + payload.Count;
 
+					/* if (Logging.CurrentLogLevel <= LogLevel.Info)
+					{
+						messageCount++;
+						messageString += "Wrote another packet: " + messageCount.ToString() + " | ";
+					} */
+
 					return true;
 				}
 			}
 		}
-
 		internal ArraySegment<byte>? TryFlush()
 		{
 			lock (_lock)
 			{
 				if (_position > 1)
 				{
+					/* if (Logging.CurrentLogLevel <= LogLevel.Info)
+					{
+						Logging.LogInfo(messageString);
+						Logging.LogInfo("Flushed " + messageCount.ToString() + " merged packets");
+
+						messageCount = 0;
+						messageString = "";
+					} */
+
 					// Its time to flush
 
 					// Save the size
@@ -101,6 +117,7 @@ namespace Ruffles.Messaging
 
 					// Reset values
 					_position = 1;
+
 
 					return new ArraySegment<byte>(_buffer, 0, flushSize);
 				}

@@ -23,6 +23,7 @@ public class NetworkingManagerEditor : Editor
 	private SerializedProperty protocolVersionProperty;
 	private SerializedProperty allowRuntimeSceneChangesProperty;
 	private SerializedProperty networkTransportProperty;
+	private SerializedProperty serverTargetFramerate;
 	private SerializedProperty networkedTransformTickrateProperty;
 	private SerializedProperty clientCommandTickrateProperty;
 	private SerializedProperty maxReceiveEventsPerTickRateProperty;
@@ -106,6 +107,7 @@ public class NetworkingManagerEditor : Editor
 		protocolVersionProperty = networkConfigProperty.FindPropertyRelative("ProtocolVersion");
 		allowRuntimeSceneChangesProperty = networkConfigProperty.FindPropertyRelative("AllowRuntimeSceneChanges");
 		networkTransportProperty = networkConfigProperty.FindPropertyRelative("NetworkTransport");
+		serverTargetFramerate = networkConfigProperty.FindPropertyRelative("ServerTargetFramerate");
 		networkedTransformTickrateProperty = networkConfigProperty.FindPropertyRelative("NetworkedTransformTickrate");
 		clientCommandTickrateProperty = networkConfigProperty.FindPropertyRelative("ClientCommandTickrate");
 		maxReceiveEventsPerTickRateProperty = networkConfigProperty.FindPropertyRelative("MaxReceiveEventsPerTickRate");
@@ -149,6 +151,7 @@ public class NetworkingManagerEditor : Editor
 		protocolVersionProperty = networkConfigProperty.FindPropertyRelative("ProtocolVersion");
 		allowRuntimeSceneChangesProperty = networkConfigProperty.FindPropertyRelative("AllowRuntimeSceneChanges");
 		networkTransportProperty = networkConfigProperty.FindPropertyRelative("NetworkTransport");
+		serverTargetFramerate = networkConfigProperty.FindPropertyRelative("ServerTargetFramerate");
 		networkedTransformTickrateProperty = networkConfigProperty.FindPropertyRelative("NetworkedTransformTickrate");
 		clientCommandTickrateProperty = networkConfigProperty.FindPropertyRelative("ClientCommandTickrate");
 		maxReceiveEventsPerTickRateProperty = networkConfigProperty.FindPropertyRelative("MaxReceiveEventsPerTickRate");
@@ -309,6 +312,7 @@ public class NetworkingManagerEditor : Editor
 			}
 
 			EditorGUILayout.LabelField("Performance", EditorStyles.boldLabel);
+			EditorGUILayout.PropertyField(serverTargetFramerate);
 			EditorGUILayout.PropertyField(networkedTransformTickrateProperty);
 			EditorGUILayout.PropertyField(clientCommandTickrateProperty);
 			EditorGUILayout.PropertyField(maxReceiveEventsPerTickRateProperty);

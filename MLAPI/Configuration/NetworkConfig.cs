@@ -63,6 +63,11 @@ namespace MLAPI.Configuration
 		public bool CreatePlayerPrefab = true;
 
 		/// <summary>
+		/// The server's target Update() rate at the game/application level
+		/// </summary>
+		[Tooltip("The server's target Update() rate at the game/application level")]
+		public int ServerTargetFramerate = 100;
+		/// <summary>
 		/// The amount of times per second the networked transforms are sent to clients
 		/// </summary>
 		[Tooltip("The amount of times per second the networked transforms are sent to clients (UnreliableOrdered)")]
@@ -262,6 +267,7 @@ namespace MLAPI.Configuration
 						writer.WriteString(config.RegisteredScenes[i]);
 					}
 
+					writer.WriteInt32Packed(config.ServerTargetFramerate);
 					writer.WriteInt32Packed(config.NetworkedTransformTickrate);
 					writer.WriteInt32Packed(config.ClientCommandTickrate);
 					writer.WriteInt32Packed(config.MaxReceiveEventsPerTickRate);
@@ -313,6 +319,7 @@ namespace MLAPI.Configuration
 						config.RegisteredScenes.Add(reader.ReadString().ToString());
 					}
 
+					config.ServerTargetFramerate = reader.ReadInt32Packed();
 					config.NetworkedTransformTickrate = reader.ReadInt32Packed();
 					config.ClientCommandTickrate = reader.ReadInt32Packed();
 					config.MaxReceiveEventsPerTickRate = reader.ReadInt32Packed();

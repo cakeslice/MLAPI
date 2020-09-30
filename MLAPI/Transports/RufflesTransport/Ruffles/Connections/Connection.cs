@@ -302,7 +302,7 @@ namespace Ruffles.Connections
 			else
 			{
 				// Packet was dropped
-				if (Logging.CurrentLogLevel <= LogLevel.Debug) Logging.LogInfo("Message to connection " + this.Id + " was dropped due to bandwidth constraits");
+				if (Logging.CurrentLogLevel <= LogLevel.Warning) Logging.LogInfo("Message to connection " + this.Id + " was dropped due to bandwidth constraits");
 			}
 		}
 

@@ -317,6 +317,12 @@ namespace MLAPI
 
 		private void Init(bool server)
 		{
+			if (server)
+			{
+				QualitySettings.vSyncCount = 0;
+				Application.targetFrameRate = NetworkConfig.ServerTargetFramerate;
+			}
+
 			if (NetworkLog.CurrentLogLevel <= LogLevel.Developer) NetworkLog.LogInfo("Init()");
 
 			LocalClientId = 0;
@@ -324,7 +330,6 @@ namespace MLAPI
 			currentNetworkTimeOffset = 0f;
 			lastEventTickTime = 0f;
 			lastLagCompensationTickTime = 0f;
-			lagCompensationOvershootCounter = 0f;
 			PendingClients.Clear();
 			ConnectedClients.Clear();
 			ConnectedClientsList.Clear();
@@ -636,7 +641,6 @@ namespace MLAPI
 		private float lastEventTickTime;
 		private float lastLagCompensationTickTime;
 		private float lastNetworkedTransformTickTime;
-		private float lagCompensationOvershootCounter;
 		public delegate void NetworkedTransformUpdate();
 		public event NetworkedTransformUpdate OnNetworkedTransformUpdate;
 		private float lastTimeSyncTime;
@@ -647,16 +651,25 @@ namespace MLAPI
 				NetworkProfiler.StartTick(TickType.Receive);
 				NetEventType eventType;
 				int processedEvents = 0;
+				/* int processedServerTicks = 0;
+				int processedClientTicks = 0; */
 
 				do
 				{
 					processedEvents++;
 					eventType = NetworkConfig.NetworkTransport.PollEvent(out ulong clientId, out string channelName, out ArraySegment<byte> payload, out float receiveTime);
+
+					/* if (channelName == "MLAPI_SERVER_TICK")
+						processedServerTicks++;
+					else if (channelName == "MLAPI_CLIENT_TICK")
+						processedClientTicks++; */
+
 					HandleRawTransportPoll(eventType, clientId, channelName, payload, receiveTime);
 
 					// Only do another iteration if: there are no more messages AND (there is no limit to max events or we have processed less than the maximum)
 				} while (IsListening && (eventType != NetEventType.Nothing && (NetworkConfig.MaxReceiveEventsPerTickRate <= 0 || processedEvents < NetworkConfig.MaxReceiveEventsPerTickRate)));
 
+				/* Debug.Log("Processed " + processedServerTicks + " server and " + processedClientTicks + " client ticks this frame..."); */
 				NetworkProfiler.EndTick();
 
 				if (!IsListening)
@@ -683,54 +696,34 @@ namespace MLAPI
 
 					if (IsServer)
 					{
-						lastEventTickTime = NetworkTime;
+						lastEventTickTime = NetworkTime - ((NetworkTime - lastEventTickTime) - (1f / NetworkConfig.EventTickrate));
 					}
 
 					NetworkProfiler.EndTick();
 				}
 				//
 
-				if (((NetworkTime - lastLagCompensationTickTime >= (1f / NetworkConfig.LagCompensationTickRate))))
+				if (IsServer && ((NetworkTime - lastLagCompensationTickTime >= (1f / NetworkConfig.LagCompensationTickRate))))
 				{
 					// TODO: NetworkProfiler.StartTick(TickType.Event);
 
-					if (IsServer)
-					{
-						lagCompensationOvershootCounter += ((NetworkTime - lastLagCompensationTickTime) - (1f / NetworkConfig.LagCompensationTickRate));
-						LagCompensationManager.AddFrames();
-					}
-
-					if (IsServer)
-					{
-						lastLagCompensationTickTime = NetworkTime;
-					}
-
-					// TODO: NetworkProfiler.EndTick();
-				}
-				else if (IsServer && lagCompensationOvershootCounter >= ((1f / NetworkConfig.LagCompensationTickRate)))
-				{
-					// TODO: NetworkProfiler.StartTick(TickType.Event);
-					//We run this one to compensate for previous update overshoots.
-					lagCompensationOvershootCounter -= (1f / NetworkConfig.LagCompensationTickRate);
 					LagCompensationManager.AddFrames();
+
+					lastLagCompensationTickTime = NetworkTime - ((NetworkTime - lastLagCompensationTickTime) - (1f / NetworkConfig.LagCompensationTickRate));
+
 					// TODO: NetworkProfiler.EndTick();
 				}
 
 				//
 
-				if (((NetworkTime - lastNetworkedTransformTickTime >= (1f / NetworkConfig.NetworkedTransformTickrate))))
+				if (IsServer && ((NetworkTime - lastNetworkedTransformTickTime >= (1f / NetworkConfig.NetworkedTransformTickrate))))
 				{
 					// TODO: NetworkProfiler.StartTick(TickType.Event);
 
-					if (IsServer)
-					{
-						OnNetworkedTransformUpdate.Invoke();
-					}
+					/* UnityEngine.Debug.Log(((NetworkTime - lastNetworkedTransformTickTime) - (1f / NetworkConfig.NetworkedTransformTickrate)) * 1000 + " ms difference"); */
+					OnNetworkedTransformUpdate.Invoke();
 
-					if (IsServer)
-					{
-						lastNetworkedTransformTickTime = NetworkTime;
-					}
+					lastNetworkedTransformTickTime = NetworkTime - ((NetworkTime - lastNetworkedTransformTickTime) - (1f / NetworkConfig.NetworkedTransformTickrate));
 
 					// TODO: NetworkProfiler.EndTick();
 				}

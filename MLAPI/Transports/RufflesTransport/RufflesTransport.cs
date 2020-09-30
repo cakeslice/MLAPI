@@ -45,6 +45,7 @@ namespace RufflesTransport
 		public LogLevel LogLevel = LogLevel.Info;
 
 		[Header("SocketConfig")]
+		public bool EnableBandwidthTracking = false;
 		public bool EnableSyncronizationEvent = false;
 		public bool EnableSyncronizedCallbacks = false;
 		public int EventQueueSize = 256;
@@ -425,7 +426,8 @@ namespace RufflesTransport
 				ProcessingThreads = ProcessingThreads,
 				ReuseChannels = ReuseChannels,
 				SocketThreads = SocketThreads,
-				EnableAckNotifications = EnableAckNotifications
+				EnableAckNotifications = EnableAckNotifications,
+				EnableBandwidthTracking = EnableBandwidthTracking
 			};
 
 			int channelCount = MLAPI_CHANNELS.Length + Channels.Count;

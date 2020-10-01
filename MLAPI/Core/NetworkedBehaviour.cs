@@ -170,6 +170,7 @@ namespace MLAPI
 
 		internal void InternalNetworkStart()
 		{
+			/* Debug.Log("Checking class for RPCs: " + gameObject.name + " | " + GetType().Name); */
 			rpcDefinition = RpcTypeDefinition.Get(GetType());
 			rpcDelegates = rpcDefinition.CreateTargetedDelegates(this);
 
@@ -1021,7 +1022,7 @@ namespace MLAPI
 		{
 			if (!rpcDefinition.serverMethods.ContainsKey(hash))
 			{
-				if (NetworkLog.CurrentLogLevel <= LogLevel.Normal) NetworkLog.LogWarning("ServerRPC request method not found");
+				if (NetworkLog.CurrentLogLevel <= LogLevel.Normal) NetworkLog.LogWarning("ServerRPC request method not found: " + hash);
 				return null;
 
 			}
@@ -1033,7 +1034,7 @@ namespace MLAPI
 		{
 			if (!rpcDefinition.clientMethods.ContainsKey(hash))
 			{
-				if (NetworkLog.CurrentLogLevel <= LogLevel.Normal) NetworkLog.LogWarning("ClientRPC request method not found");
+				if (NetworkLog.CurrentLogLevel <= LogLevel.Normal) NetworkLog.LogWarning("ClientRPC request method not found: " + hash);
 				return null;
 			}
 

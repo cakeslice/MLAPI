@@ -38,6 +38,10 @@ namespace MLAPI.Prototyping
 		/// </summary>
 		public bool SyncRotation = true;
 		/// <summary>
+		/// Should the rotation use all axis or just Y
+		/// </summary>
+		public bool FullRotation = false;
+		/// <summary>
 		/// The type of transform the server should send
 		/// </summary>
 		[SerializeField]
@@ -170,7 +174,7 @@ namespace MLAPI.Prototyping
 		{
 			if (IsServer)//IsOwner)
 			{
-				// ! if (SyncPosition && (Vector3.Distance(transform.position, lastSentPos) > MinMeters) || (SyncRotation && Quaternion.Angle(transform.rotation, lastSentRot) > MinDegrees))
+				if ((SyncPosition && (Vector3.Distance(transform.position, lastSentPos) > MinMeters)) || ((SyncRotation && Quaternion.Angle(transform.rotation, lastSentRot) > MinDegrees)))
 				{
 					lastSentPos = transform.position;
 					lastSentRot = transform.rotation;
@@ -193,22 +197,28 @@ namespace MLAPI.Prototyping
 						lerpT = 1f;
 					}
 
-					float sendDelay = (IsServer || !EnableRange || !AssumeSyncedSends || NetworkingManager.Singleton.ConnectedClients[NetworkingManager.Singleton.LocalClientId].PlayerObject == null) ? (1f / NetworkingManager.Singleton.NetworkConfig.NetworkedTransformTickrate) : GetTimeForLerp(transform.position, NetworkingManager.Singleton.ConnectedClients[NetworkingManager.Singleton.LocalClientId].PlayerObject.transform.position);
+					float sendDelay = (IsServer || !SyncPosition || !EnableRange || !AssumeSyncedSends || NetworkingManager.Singleton.ConnectedClients[NetworkingManager.Singleton.LocalClientId].PlayerObject == null) ? (1f / NetworkingManager.Singleton.NetworkConfig.NetworkedTransformTickrate) : GetTimeForLerp(transform.position, NetworkingManager.Singleton.ConnectedClients[NetworkingManager.Singleton.LocalClientId].PlayerObject.transform.position);
 					lerpT += Time.unscaledDeltaTime / sendDelay;
 
-					if (ExtrapolatePosition && Time.unscaledTime - lastRecieveTime < sendDelay * MaxSendsToExtrapolate)
-						transform.position = Vector3.LerpUnclamped(lerpStartPos, lerpEndPos, lerpT);
-					else
-						transform.position = Vector3.Lerp(lerpStartPos, lerpEndPos, lerpT);
+					if (SyncPosition)
+					{
+						if (ExtrapolatePosition && Time.unscaledTime - lastRecieveTime < sendDelay * MaxSendsToExtrapolate)
+							transform.position = Vector3.LerpUnclamped(lerpStartPos, lerpEndPos, lerpT);
+						else
+							transform.position = Vector3.Lerp(lerpStartPos, lerpEndPos, lerpT);
+					}
 
-					if (ExtrapolatePosition && Time.unscaledTime - lastRecieveTime < sendDelay * MaxSendsToExtrapolate)
-						transform.rotation = Quaternion.SlerpUnclamped(lerpStartRot, lerpEndRot, lerpT);
-					else
-						transform.rotation = Quaternion.Slerp(lerpStartRot, lerpEndRot, lerpT);
+					if (SyncRotation)
+					{
+						if (ExtrapolatePosition && Time.unscaledTime - lastRecieveTime < sendDelay * MaxSendsToExtrapolate)
+							transform.rotation = Quaternion.SlerpUnclamped(lerpStartRot, lerpEndRot, lerpT);
+						else
+							transform.rotation = Quaternion.Slerp(lerpStartRot, lerpEndRot, lerpT);
+					}
 				}
 			}
 
-			if (IsServer && EnableRange && EnableNonProvokedResendChecks) CheckForMissedSends();
+			if (IsServer && SyncPosition && EnableRange && EnableNonProvokedResendChecks) CheckForMissedSends();
 		}
 
 		void InvokeApplyTransform(ulong clientId, Vector3 position, Quaternion rotation, string channelName)
@@ -223,43 +233,41 @@ namespace MLAPI.Prototyping
 						{
 							writer.WriteVector2Packed(position);
 							writer.WriteSinglePacked(rotation.eulerAngles.z);
-
-							InvokeClientRpcOnClientPerformance("ApplyTransform2D", clientId, stream, channelName, Security.SecuritySendFlags.None);
 						}
 						else if (SyncPosition)
 						{
 							writer.WriteVector2Packed(position);
-
-							InvokeClientRpcOnClientPerformance("ApplyTransform2DOnlyPosition", clientId, stream, channelName, Security.SecuritySendFlags.None);
 						}
 						else if (SyncRotation)
 						{
 							writer.WriteSinglePacked(rotation.eulerAngles.z);
-
-							InvokeClientRpcOnClientPerformance("ApplyTransform2DOnlyRotation", clientId, stream, channelName, Security.SecuritySendFlags.None);
 						}
+
+						InvokeClientRpcOnClientPerformance("ApplyTransform2D", clientId, stream, channelName, Security.SecuritySendFlags.None);
 					}
 					else if (TransformTypeToSync == TransformType.Transform3D)
 					{
 						if (SyncPosition && SyncRotation)
 						{
 							writer.WriteVector3Packed(position);
-							writer.WriteVector3Packed(rotation.eulerAngles);
-
-							InvokeClientRpcOnClientPerformance("ApplyTransform", clientId, stream, channelName, Security.SecuritySendFlags.None);
+							if (FullRotation)
+								writer.WriteVector3Packed(rotation.eulerAngles);
+							else
+								writer.WriteSingle(rotation.eulerAngles.y);
 						}
 						else if (SyncPosition)
 						{
 							writer.WriteVector3Packed(position);
-
-							InvokeClientRpcOnClientPerformance("ApplyTransformOnlyPosition", clientId, stream, channelName, Security.SecuritySendFlags.None);
 						}
 						else if (SyncRotation)
 						{
-							writer.WriteVector3Packed(rotation.eulerAngles);
-
-							InvokeClientRpcOnClientPerformance("ApplyTransformOnlyRotation", clientId, stream, channelName, Security.SecuritySendFlags.None);
+							if (FullRotation)
+								writer.WriteVector3Packed(rotation.eulerAngles);
+							else
+								writer.WriteSingle(rotation.eulerAngles.y);
 						}
+
+						InvokeClientRpcOnClientPerformance("ApplyTransform", clientId, stream, channelName, Security.SecuritySendFlags.None);
 					}
 				}
 			}
@@ -276,43 +284,41 @@ namespace MLAPI.Prototyping
 						{
 							writer.WriteVector2Packed(position);
 							writer.WriteSinglePacked(rotation.eulerAngles.z);
-
-							InvokeClientRpcOnEveryonePerformance("ApplyTransform2D", stream, channelName, Security.SecuritySendFlags.None);
 						}
 						else if (SyncPosition)
 						{
 							writer.WriteVector2Packed(position);
-
-							InvokeClientRpcOnEveryonePerformance("ApplyTransform2DOnlyPosition", stream, channelName, Security.SecuritySendFlags.None);
 						}
 						else if (SyncRotation)
 						{
 							writer.WriteSinglePacked(rotation.eulerAngles.z);
-
-							InvokeClientRpcOnEveryonePerformance("ApplyTransform2DOnlyRotation", stream, channelName, Security.SecuritySendFlags.None);
 						}
+
+						InvokeClientRpcOnEveryonePerformance("ApplyTransform2D", stream, channelName, Security.SecuritySendFlags.None);
 					}
 					else if (TransformTypeToSync == TransformType.Transform3D)
 					{
 						if (SyncPosition && SyncRotation)
 						{
 							writer.WriteVector3Packed(position);
-							writer.WriteVector3Packed(rotation.eulerAngles);
-
-							InvokeClientRpcOnEveryonePerformance("ApplyTransform", stream, channelName, Security.SecuritySendFlags.None);
+							if (FullRotation)
+								writer.WriteVector3Packed(rotation.eulerAngles);
+							else
+								writer.WriteSinglePacked(rotation.eulerAngles.y);
 						}
 						else if (SyncPosition)
 						{
 							writer.WriteVector3Packed(position);
-
-							InvokeClientRpcOnEveryonePerformance("ApplyTransformOnlyPosition", stream, channelName, Security.SecuritySendFlags.None);
 						}
 						else if (SyncRotation)
 						{
-							writer.WriteVector3Packed(rotation.eulerAngles);
-
-							InvokeClientRpcOnEveryonePerformance("ApplyTransformOnlyRotation", stream, channelName, Security.SecuritySendFlags.None);
+							if (FullRotation)
+								writer.WriteVector3Packed(rotation.eulerAngles);
+							else
+								writer.WriteSinglePacked(rotation.eulerAngles.y);
 						}
+
+						InvokeClientRpcOnEveryonePerformance("ApplyTransform", stream, channelName, Security.SecuritySendFlags.None);
 					}
 				}
 			}
@@ -325,69 +331,43 @@ namespace MLAPI.Prototyping
 
 			using (PooledBitReader reader = PooledBitReader.Get(stream))
 			{
-				Vector3 position = reader.ReadVector3Packed();
-				Quaternion rotation = Quaternion.Euler(reader.ReadVector3Packed());
+				Vector3 position = Vector3.zero;
+				Quaternion rotation = Quaternion.identity;
+				if (SyncPosition)
+					position = reader.ReadVector3Packed();
+				if (SyncRotation)
+				{
+					if (FullRotation)
+						Quaternion.Euler(reader.ReadVector3Packed());
+					else
+						Quaternion.Euler(0, reader.ReadSinglePacked(), 0);
+				}
 
 				if (InterpolatePosition && (!IsServer || InterpolateServer))
 				{
 					lastRecieveTime = Time.unscaledTime;
-					lerpStartPos = transform.position;
-					lerpStartRot = transform.rotation;
-					lerpEndPos = position;
-					lerpEndRot = rotation;
+					if (SyncPosition)
+					{
+						lerpStartPos = transform.position;
+						lerpEndPos = position;
+					}
+					if (SyncRotation)
+					{
+						lerpStartRot = transform.rotation;
+						lerpEndRot = rotation;
+					}
 					lerpT = 0;
 				}
 				else
 				{
-					transform.position = position;
-					transform.rotation = rotation;
+					if (SyncPosition)
+						transform.position = position;
+					if (SyncRotation)
+						transform.rotation = rotation;
 				}
 			}
 		}
-		[ClientRPC]
-		private void ApplyTransformOnlyPosition(ulong clientId, Stream stream)
-		{
-			if (!enabled) return;
 
-			using (PooledBitReader reader = PooledBitReader.Get(stream))
-			{
-				Vector3 position = reader.ReadVector3Packed();
-
-				if (InterpolatePosition && (!IsServer || InterpolateServer))
-				{
-					lastRecieveTime = Time.unscaledTime;
-					lerpStartPos = transform.position;
-					lerpEndPos = position;
-					lerpT = 0;
-				}
-				else
-				{
-					transform.position = position;
-				}
-			}
-		}
-		[ClientRPC]
-		private void ApplyTransformOnlyRotation(ulong clientId, Stream stream)
-		{
-			if (!enabled) return;
-
-			using (PooledBitReader reader = PooledBitReader.Get(stream))
-			{
-				Quaternion rotation = Quaternion.Euler(reader.ReadVector3Packed());
-
-				if (InterpolatePosition && (!IsServer || InterpolateServer))
-				{
-					lastRecieveTime = Time.unscaledTime;
-					lerpStartRot = transform.rotation;
-					lerpEndRot = rotation;
-					lerpT = 0;
-				}
-				else
-				{
-					transform.rotation = rotation;
-				}
-			}
-		}
 		[ClientRPC]
 		private void ApplyTransform2D(ulong clientId, Stream stream)
 		{
@@ -395,66 +375,35 @@ namespace MLAPI.Prototyping
 
 			using (PooledBitReader reader = PooledBitReader.Get(stream))
 			{
-				Vector2 position = reader.ReadVector2Packed();
-				float rotation = reader.ReadSinglePacked();
+				Vector2 position = Vector2.zero;
+				float rotation = 0;
+
+				if (SyncPosition)
+					position = reader.ReadVector2Packed();
+				if (SyncRotation)
+					rotation = reader.ReadSinglePacked();
 
 				if (InterpolatePosition && (!IsServer || InterpolateServer))
 				{
 					lastRecieveTime = Time.unscaledTime;
-					lerpStartPos = transform.position;
-					lerpStartRot = transform.rotation;
-					lerpEndPos = position;
-					lerpEndRot = Quaternion.Euler(0, 0, rotation);
+					if (SyncPosition)
+					{
+						lerpStartPos = transform.position;
+						lerpEndPos = position;
+					}
+					if (SyncRotation)
+					{
+						lerpStartRot = transform.rotation;
+						lerpEndRot = Quaternion.Euler(0, 0, rotation);
+					}
 					lerpT = 0;
 				}
 				else
 				{
-					transform.position = position;
-					transform.rotation = Quaternion.Euler(0, 0, rotation);
-				}
-			}
-		}
-		[ClientRPC]
-		private void ApplyTransform2DOnlyPosition(ulong clientId, Stream stream)
-		{
-			if (!enabled) return;
-
-			using (PooledBitReader reader = PooledBitReader.Get(stream))
-			{
-				Vector2 position = reader.ReadVector2Packed();
-
-				if (InterpolatePosition && (!IsServer || InterpolateServer))
-				{
-					lastRecieveTime = Time.unscaledTime;
-					lerpStartPos = transform.position;
-					lerpEndPos = position;
-					lerpT = 0;
-				}
-				else
-				{
-					transform.position = position;
-				}
-			}
-		}
-		[ClientRPC]
-		private void ApplyTransform2DOnlyRotation(ulong clientId, Stream stream)
-		{
-			if (!enabled) return;
-
-			using (PooledBitReader reader = PooledBitReader.Get(stream))
-			{
-				float rotation = reader.ReadSinglePacked();
-
-				if (InterpolatePosition && (!IsServer || InterpolateServer))
-				{
-					lastRecieveTime = Time.unscaledTime;
-					lerpStartRot = transform.rotation;
-					lerpEndRot = Quaternion.Euler(0, 0, rotation);
-					lerpT = 0;
-				}
-				else
-				{
-					transform.rotation = Quaternion.Euler(0, 0, rotation);
+					if (SyncPosition)
+						transform.position = position;
+					if (SyncRotation)
+						transform.rotation = Quaternion.Euler(0, 0, rotation);
 				}
 			}
 		}
@@ -479,10 +428,18 @@ namespace MLAPI.Prototyping
 
 				if ((receiverPosition == null || senderPosition == null && NetworkingManager.Singleton.NetworkTime - info.lastSent >= (1f / NetworkingManager.Singleton.NetworkConfig.NetworkedTransformTickrate)) || NetworkingManager.Singleton.NetworkTime - info.lastSent >= GetTimeForLerp(receiverPosition.Value, senderPosition.Value))
 				{
-					Vector3? pos = NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject == null ? null : new Vector3?(NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject.transform.position);
-					Quaternion? rot = NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject == null ? null : new Quaternion?(NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject.transform.rotation);
+					Vector3? pos = null;
+					if (SyncPosition)
+					{
+						pos = NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject == null ? null : new Vector3?(NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject.transform.position);
+					}
+					Quaternion? rot = null;
+					if (SyncRotation)
+					{
+						rot = NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject == null ? null : new Quaternion?(NetworkingManager.Singleton.ConnectedClients[OwnerClientId].PlayerObject.transform.rotation);
+					}
 
-					if (pos != null && rot != null)
+					if ((pos != null || !SyncPosition) && (rot != null || !SyncRotation))
 					{
 						info.lastSent = NetworkingManager.Singleton.NetworkTime;
 						info.lastMissedPosition = null;
@@ -503,10 +460,16 @@ namespace MLAPI.Prototyping
 		{
 			if (InterpolateServer && IsServer || IsClient)
 			{
-				lerpStartPos = position;
-				lerpStartRot = rotation;
-				lerpEndPos = position;
-				lerpEndRot = rotation;
+				if (SyncPosition)
+				{
+					lerpStartPos = position;
+					lerpEndPos = position;
+				}
+				if (SyncRotation)
+				{
+					lerpStartRot = rotation;
+					lerpEndRot = rotation;
+				}
 				lerpT = 0;
 			}
 		}

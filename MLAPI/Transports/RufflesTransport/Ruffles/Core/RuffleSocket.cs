@@ -649,7 +649,7 @@ namespace Ruffles.Core
 		{
 			if (payload.Count > Config.MinimumMTU)
 			{
-				if (Logging.CurrentLogLevel <= LogLevel.Error) Logging.LogError("Tried to send unconnected message that was too large. [Size=" + payload.Count + "] [MaxMessageSize=" + Config.MaxFragments + "]");
+				if (Logging.CurrentLogLevel <= LogLevel.Error) Logging.LogError("Tried to send unconnected message that was too large. [Size=" + payload.Count + "] [MaxMessageSize=" + Config.MinimumMTU + "]");
 				return false;
 			}
 
@@ -683,7 +683,7 @@ namespace Ruffles.Core
 		{
 			if (payload.Count > Config.MinimumMTU)
 			{
-				if (Logging.CurrentLogLevel <= LogLevel.Error) Logging.LogError("Tried to send broadcast message that was too large. [Size=" + payload.Count + "] [MaxMessageSize=" + Config.MaxFragments + "]");
+				if (Logging.CurrentLogLevel <= LogLevel.Error) Logging.LogError("Tried to send broadcast message that was too large. [Size=" + payload.Count + "] [MaxMessageSize=" + Config.MinimumMTU + "]");
 				return false;
 			}
 

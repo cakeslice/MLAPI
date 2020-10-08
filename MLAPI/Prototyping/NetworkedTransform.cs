@@ -95,7 +95,7 @@ namespace MLAPI.Prototyping
 		private Vector3 lastSentPos;
 		private Quaternion lastSentRot;
 
-		private float lastRecieveTime;
+		private float lastReceiveTime;
 
 		/// <summary>
 		/// Enables min distance required to send to other clients
@@ -196,14 +196,14 @@ namespace MLAPI.Prototyping
 
 				if (SyncPosition)
 				{
-					if (ExtrapolatePosition && Time.unscaledTime - lastRecieveTime < sendDelay * MaxSendsToExtrapolate)
+					if (ExtrapolatePosition && Time.unscaledTime - lastReceiveTime < sendDelay * MaxSendsToExtrapolate)
 						transform.position = Vector3.LerpUnclamped(lerpStartPos, lerpEndPos, lerpT);
 					else
 						transform.position = Vector3.Lerp(lerpStartPos, lerpEndPos, lerpT);
 				}
 				if (SyncRotation)
 				{
-					if (ExtrapolatePosition && Time.unscaledTime - lastRecieveTime < sendDelay * MaxSendsToExtrapolate)
+					if (ExtrapolatePosition && Time.unscaledTime - lastReceiveTime < sendDelay * MaxSendsToExtrapolate)
 						transform.rotation = Quaternion.SlerpUnclamped(lerpStartRot, lerpEndRot, lerpT);
 					else
 						transform.rotation = Quaternion.Slerp(lerpStartRot, lerpEndRot, lerpT);
@@ -347,7 +347,7 @@ namespace MLAPI.Prototyping
 
 				if (InterpolatePosition && !IsServer)
 				{
-					lastRecieveTime = Time.unscaledTime;
+					lastReceiveTime = Time.unscaledTime;
 					if (SyncPosition)
 					{
 						lerpStartPos = transform.position;
@@ -387,7 +387,7 @@ namespace MLAPI.Prototyping
 
 				if (InterpolatePosition && !IsServer)
 				{
-					lastRecieveTime = Time.unscaledTime;
+					lastReceiveTime = Time.unscaledTime;
 					if (SyncPosition)
 					{
 						lerpStartPos = transform.position;
